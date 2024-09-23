@@ -1,0 +1,42 @@
+{
+    // Use IntelliSense para saber los atributos posibles.
+    // Mantenga el puntero para ver las descripciones de los existentes atributos.
+    // Para más información, visite: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug ANTLR4 grammar",
+            "type": "antlr-debug",
+            "request": "launch",
+            // Archivo con la gramatica
+            "grammar": "${file}",
+            // Archivo a parsear
+            "input": "input/programa.txt",
+            // Simbolo inicial o regla inicial de donde comenzar
+            "startRule": "programa",
+            // Muestra Arbol Sintactico
+            "printParseTree": true,
+            "visualParseTree": true
+        },
+        {
+            "name": "Python: Current File",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal"
+        },
+        {
+            "type": "java",
+            "name": "Current File",
+            "request": "launch",
+            "mainClass": "${file}"
+        },
+        {
+            "type": "java",
+            "name": "App(1)",
+            "request": "launch",
+            "mainClass": "proyecto.dhs.App",
+            "projectName": "proyecto-dhs"
+        }
+    ]
+}
