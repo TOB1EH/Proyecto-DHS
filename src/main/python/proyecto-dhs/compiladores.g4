@@ -13,6 +13,11 @@ CC   : ']' ;
 PYC  : ';' ;
 COMA : ',' ;
 
+// Operaciones logicas
+LNOT : '!'  ;
+LAND : '&&' ;
+LOR  : '||' ;
+
 // Operaciones
 ASIG  : '=' ;
 SUMA  : '+' ;
@@ -21,18 +26,25 @@ MULTI : '*' ;
 DIVI  : '/' ;
 MOD   : '%' ;
 
-// Comparaciones
-IGUAL      : '==' ;
-NIGUAL     : '!=' ;
+// Operadores de igualdad
+IGUAL   : '==' ;
+NIGUAL  : '!=' ;
+
+// Operadores relacionales 
 MAYOR      : '>' ;
 MENOR      : '<' ;
 MAYORIGUAL : '>=' ;
 MENORIGUAL : '<=' ;
 
-// COMENTARIOS
-ICOMEN : '/*' ;
-FCOMEN : '*/' ;
-COMEN  : '//' ;
+// Operadores bit a bit
+AND : '&' ;
+OR  : '|' ;
+NOT : '~' ;
+XOR : '^' ;
+
+// Incrementos y Decrementos
+INC : '++' ;
+DEC : '--' ;
 
 // PALABRAS RESERVADAS DEL LENGUAJE:
 WHILE  : 'while' ;
@@ -41,11 +53,16 @@ IF     : 'if' ;
 ELSE   : 'else' ;
 RETURN : 'return' ;
 
-// Tipos de variables
-INT : 'int' ; // lo trataremos como una palabra reservada
+// Tipos de datos de variables
+INT     : 'int' ; // lo trataremos como una palabra reservada
+FLOAT   : 'float' ;
+DOUBLE  : 'double' ;
+CHAR    : 'char' ;
 
-// OTROS
+// Ignorar espacios en blanco y comentarios
 WS : [ \t\n\r] -> skip ;
+LINE_COMMENT : '//' ~[\r\n]* -> skip ;
+BLOCK_COMMENT : '/*' .*? '*/' -> skip ;
 
 NUMERO : DIGITO+ ;
 
@@ -53,25 +70,8 @@ ID : (LETRA | '_')(LETRA | DIGITO | '_')* ;
 
 OTRO : . ;
 
-/* s : ID     {print("ID ->" + $ID.text + "<--") }         s
-  | NUMERO {print("NUMERO ->" + $NUMERO.text + "<--") } s
-  | OTRO   {print("Otro ->" + $OTRO.text + "<--") }     s
-  | WHILE  {print("While ->" + $WHILE.text + "<--") }     s
-  | FOR    {print("For ->" + $FOR.text + "<--") }     s
-  | IF     {print("If ->" + $IF.text + "<--") }     s
-  | ELSE   {print("Else ->" + $ELSE.text + "<--") }     s
-  | EOF
-  ;
- */
 
-// si : s EOF ; // simbolo inicial, raiz del arbol, es decir de aca arranco
-
-// s : PA s PC s // anidacion de parentesis, verifico balance de parentesis
-//   | // palabra vacia
-//   ;
-
-
-// PROGRAMA:
+// PROGRAMA de Reglas Gramaticales:
 programa : instrucciones EOF ;
 
 instrucciones : instruccion instrucciones
@@ -81,8 +81,15 @@ instrucciones : instruccion instrucciones
 instruccion : declaracion PYC
             | asignacion PYC
             | iwhile
+            | ifor
+            | iif
+            | ielse
             | bloque
             ;
+
+// BLoque de instrucciones entre llaves
+bloque : LLA instrucciones LLC ;
+
 // Declaracion de variables
 declaracion : INT ID d ;
 
@@ -94,15 +101,46 @@ lista_variables : COMA ID d
                 |
                 ;
 
-
 // Asignacion o inicializacion de variables o valores 
 asignacion : ID ASIG opal ;
 
-// Operaciones aritmeticas y logicas
-opal : exp ; // Completar
+// OPERACIONES ARITMETICAS Y LOGICAS
+opal : oplogicos ;
 
-// Expresion
-exp : term e ;
+// Operaciones Logicas
+
+oplogicos : logico lor ;
+
+lor : LOR logico lor // Operador logico OR
+    |
+    ;
+
+logico : conjunto land;
+
+land : LAND conjunto land // Operador logico AND
+     |
+     ;
+
+// Comparaciones
+conjunto : c igualdad ;
+
+igualdad : IGUAL  c igualdad
+         | NIGUAL c igualdad
+         |
+         ;
+
+c : exp comparar ;
+
+comparar : MAYORIGUAL exp comparar
+         | MENORIGUAL exp comparar
+         | MAYOR      exp comparar
+         | MENOR      exp comparar
+         |
+         ;
+
+// Operaciones Aritmeticas
+
+exp : term e ; // Expresion
 
 // Expresion prima
 e : SUMA term e
@@ -121,38 +159,36 @@ t : MULTI factor t
   ;
 
 // Un factor del termino 
-factor : NUMERO
+factor : LNOT factor 
+       | NUMERO
        | ID
-       | PA exp PC // Sabe que tiene que resolver esto primero por la profundidad del arbol
+       | PA oplogicos PC // Sabe que tiene que resolver esto primero por la profundidad del arbol
        ;
-
-operacion : SUMA 
-          | RESTA 
-          | MULTI 
-          | DIVI 
-          ;
 
 // Bucle while
-iwhile : WHILE PA ID PC instruccion 
-       | WHILE PA comparacion PC instruccion
-       ;
-comparacion : ID comparar ID 
-            | ID comparar NUMERO 
-            ;
+iwhile : WHILE PA cond PC instruccion ;
 
+// Bucle for
+ifor : FOR PA init PYC cond PYC iter PC instruccion ;
 
-comparar : IGUAL 
-         | NIGUAL 
-         | MAYOR 
-         | MENOR 
-         | MAYORIGUAL 
-         | MENORIGUAL 
-         ;
+// Condicional if
+iif : IF PA cond PC instruccion ;
 
-bloque : LLA instrucciones LLC ;
+// Condicional else
+ielse : iif ELSE instruccion ;
 
-// ifor : FOR PA init PYC cond PYC iter PC instruccion ;
+// Inicializacion
+init : asignacion
+     | declaracion
+     ;
 
-// init : ID ASIG (ID | NUMERO) ;
-// cond : comparacion ;
-// iter : ;
+// Condicion del for
+cond : oplogicos ;
+
+// Expresion de actualizacion o iterador
+iter : ID INC
+     | ID DEC
+     | INC ID 
+     | DEC ID
+     | asignacion
+     ;

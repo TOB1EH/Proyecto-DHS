@@ -1,3 +1,23 @@
-x = (4 + 16) / 4 * x + x * x ;
-x = 4 + 5 - 7 - 1;
-x = 4 ;
+/* Hola Mundo */
+// Como va Mundo
+// Hola Mundo
+
+else {
+    int x = 0;
+}
+
+/* for (int i = 0; i < 10; i++) {
+    x = x + i;
+} */
+
+x = 10 * 11 || c + 1 && v ; 
+
+
+if (x < 10)
+    x = x + 1;
+else {
+    x = x + 2;
+}
+
+a = (4 + 16) > b / 4 * x != y + x * x < 0 ;
+b = !(1 + b * 2 == 9 / 3 + w) ;
