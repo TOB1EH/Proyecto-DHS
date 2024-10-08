@@ -1,0 +1,40 @@
+/' Para ejecutar este archivo y mostrar el 
+   diagrama UML usar las teclas 'Alt' + 'D' '/
+
+@startuml TablaSimbolos
+
+skinparam ClassAttributeIconSize 0
+hide circle
+
+class TablaSimbolos {
+    - List<Contexto> contextos
+    + addContexto ()
+    + delContexto ()
+    + addIdentificador ()
+    + buscarLocal ()
+    + buscarGlobal ()
+}
+
+class Contexto {
+    - Dict<String, ID> tabla
+}
+
+abstract class ID <<abstract>> {
+    - String nombre
+    - Enum tipoDato
+    - Boolean inicializado
+    - Boolean usado 
+}
+
+class Variable 
+class Funcion {
+    - List<ID> args
+}
+
+/' Relaciones '/
+TablaSimbolos -> Contexto
+Contexto --> ID
+ID <|-- Variable 
+ID <|-- Funcion
+
+@enduml
