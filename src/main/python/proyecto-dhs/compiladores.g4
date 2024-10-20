@@ -70,7 +70,6 @@ ID : (LETRA | '_')(LETRA | DIGITO | '_')* ;
 
 OTRO : . ;
 
-
 // PROGRAMA de Reglas Gramaticales:
 programa : instrucciones EOF ;
 
@@ -91,15 +90,21 @@ instruccion : declaracion PYC
 bloque : LLA instrucciones LLC ;
 
 // Declaracion de variables
-declaracion : INT ID d ;
+declaracion : tipo_dato ID definicion lista_variables;
 
-d : ASIG opal lista_variables
-  | lista_variables 
-  ;
+definicion : ASIG opal
+           | 
+           ;
 
-lista_variables : COMA ID d
+lista_variables : COMA ID definicion lista_variables
                 |
                 ;
+
+tipo_dato : INT
+          | FLOAT
+          | DOUBLE
+          | CHAR
+          ;
 
 // Asignacion o inicializacion de variables o valores 
 asignacion : ID ASIG opal ;
@@ -108,7 +113,6 @@ asignacion : ID ASIG opal ;
 opal : oplogicos ;
 
 // Operaciones Logicas
-
 oplogicos : logico lor ;
 
 lor : LOR logico lor // Operador logico OR
@@ -182,7 +186,7 @@ init : asignacion
      | declaracion
      ;
 
-// Condicion del for
+// Condicion del for y while
 cond : oplogicos ;
 
 // Expresion de actualizacion o iterador

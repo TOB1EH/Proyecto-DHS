@@ -1,9 +1,9 @@
+int x = 0, y;
+while (x) {
+    x = 1;
+}
 
-int x;
-int y, z, w, o = 2, p;
-int a = 31;
-int b = 0, c, e = 9;
 
-x = b + a + c; 
+
 
 

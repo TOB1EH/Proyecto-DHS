@@ -14,7 +14,7 @@ class Escucha (compiladoresListener) :
 
     # Exit a parse tree produced by compiladoresParser#programa.
     def exitPrograma(self, ctx:compiladoresParser.ProgramaContext):
-        print("FIn de la Compilacion")
+        print("Fin de la Compilacion")
         print("Se encontraron:")
         print("\tNodos: " + str(self.numNodos))
         print("\tTokens: " + str(self.numTokens))
