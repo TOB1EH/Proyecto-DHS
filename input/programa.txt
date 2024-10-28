@@ -1,6 +1,19 @@
-int x = 0, y;
+// Comentario que deberia ser ignorado
+
+char t = 65;
+int t = 0;
+
+if (a == 0){
+    int x = 0, a, b, w;
+    float y = 0;
+    char c;
+    
+}
 while (x) {
     x = 1;
+}
+if (x == 1) {
+    int z = 1;
 }
 
 
