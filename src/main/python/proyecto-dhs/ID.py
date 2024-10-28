@@ -7,14 +7,26 @@ class TipoDato(Enum):
     CHAR    = 3
 
 class ID(ABC):
-    def __init__(self, nombre: str, tipo_dato):
-        self.nombre = nombre
-        self.tipo_dato = tipo_dato
-        self.inicializado = False
-        self.usado = False
+    def __init__(self, nombre: str, tipo_dato: TipoDato):
+        self._nombre = nombre
+        self._tipo_dato = tipo_dato
+        self._inicializado = False
+        self._usado = False
 
     def setInicializado (self):
-        self.inicializado = True
+        """
+        Indica que el ID ha sido inicializado.
+        """
+        self._inicializado = True
 
     def setUsado (self):
-        self.usado = True
+        """
+        Indica que el ID ha sido usado.
+        """
+        self._usado = True
+
+    def obtenerNombre (self):
+        """
+        Obtiene el nombre del ID.
+        """
+        return self._nombre
