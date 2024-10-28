@@ -3,7 +3,7 @@ grammar compiladores;
 fragment LETRA : [A-Za-z] ;
 fragment DIGITO : [0-9] ;
 
-// TOKENS o LITERALES o PALABRAS DEL LENGUAJE o 'HOJA'
+/* TOKENS o LITERALES o PALABRAS DEL LENGUAJE o 'HOJA' */
 PA   : '(' ;
 PC   : ')' ;
 LLA  : '{' ;
@@ -54,10 +54,13 @@ ELSE   : 'else' ;
 RETURN : 'return' ;
 
 // Tipos de datos de variables
-INT     : 'int' ; // lo trataremos como una palabra reservada
+INT     : 'int' ;
 FLOAT   : 'float' ;
 DOUBLE  : 'double' ;
 CHAR    : 'char' ;
+
+// Void
+VOID : 'void' ;
 
 // Ignorar espacios en blanco y comentarios
 WS : [ \t\n\r] -> skip ;
@@ -70,8 +73,8 @@ ID : (LETRA | '_')(LETRA | DIGITO | '_')* ;
 
 OTRO : . ;
 
-// PROGRAMA de Reglas Gramaticales:
-programa : instrucciones EOF ;
+/* REGLAS GRAMATICALES */
+programa : instrucciones EOF ; // Comienza un Programa en C basico
 
 instrucciones : instruccion instrucciones
               |
@@ -83,6 +86,11 @@ instruccion : declaracion PYC
             | ifor
             | iif
             | ielse
+            | retornar
+            | prototipo_funcion
+            | funcion
+            | llamada_funcion
+            // | incremento
             | bloque
             ;
 
@@ -183,16 +191,44 @@ ielse : iif ELSE instruccion ;
 
 // Inicializacion
 init : asignacion
-     | declaracion
+     | declaracion // REVISAR
      ;
 
 // Condicion del for y while
 cond : oplogicos ;
 
 // Expresion de actualizacion o iterador
-iter : ID INC
+iter : ID INC // REVISAR
      | ID DEC
      | INC ID 
      | DEC ID
      | asignacion
      ;
+
+retornar : RETURN oplogicos ;
+
+prototipo_funcion : tipo_dato ID PA argumentos PC ;
+
+funcion : prototipo_funcion bloque ;
+
+// argumentos de una funcion
+argumentos : tipo_dato ID lista_argumentos
+           |
+           ;
+// lista de argumentos ya que una funcion puede recibir mas de un argumento
+lista_argumentos : COMA tipo_dato ID lista_argumentos
+                 |
+                 ;
+
+// Invocacion de una funcion
+llamada_funcion : ID PA argumentos_a_funcion PC ;
+
+// Son los argumentos que le pasamos a la funcion invocada
+argumentos_a_funcion : oplogicos lista_argumentos_a_funcion
+                     |
+                     ;
+
+// lista de argumentos a funcion ya que una funcion puede recibir mas de un argumento
+lista_argumentos_a_funcion : COMA oplogicos lista_argumentos_a_funcion     
+                           |
+                           ;
