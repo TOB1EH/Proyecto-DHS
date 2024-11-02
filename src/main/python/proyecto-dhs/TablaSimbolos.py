@@ -95,6 +95,17 @@ class TablaSimbolos:
                     return resultado
         return None # Si la lista de contextos esta vacia o el ID no existe globalmente
     
+    def actualizarUsado (self, nombre:str):
+        """
+            Busca localmente en un Contexto el nombre de una variable o funcion y 
+            si no esta usado actualiza su estado a usado. El identificador debe
+            existir en la tabla de simbolo, caso contrario no hace nada.
+        """
+
+        identificador = self.buscarGlobal(nombre)
+        if identificador.getUsado() is False: # Si el ID no esta usado
+            identificador.setUsado() # Setea su valor a usado
+
     def mostrarContextoActual (self):
         """ 
         Retorna el toString del Contexto actual

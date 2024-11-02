@@ -25,6 +25,20 @@ class ID(ABC):
         """
         self._usado = True
 
+    def getInicializado (self):
+        """
+        Indica si el ID ha sido inicializado.
+        """
+
+        return self._inicializado
+
+    def getUsado (self):
+        """
+        Indica si el ID ha sido usado.
+        """
+
+        return self._usado
+
     def obtenerNombre (self):
         """
         Obtiene el nombre del ID.
