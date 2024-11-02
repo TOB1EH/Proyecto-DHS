@@ -29,6 +29,20 @@ class MyListener (compiladoresListener):
         print("\n+" + "="*10, "Fin de la Compilacion", "="*10 + "+\n")
         self.tabla_simbolos.borrarContexto() # Borra el contexto global (Ultimo contexto restante)
 
+
+    def exitInstruccion(self, ctx:compiladoresParser.InstruccionContext):
+        """
+        Método que se ejecuta al salir del contexto de la regla "instruccion".
+        Verifica si la instrucción termina con un punto y coma.
+        """
+
+        # Verifica si el contexto corresponde a uno de estos tipos de instrucción válidos
+        if ctx.declaracion() or ctx.asignacion() or ctx.retornar() or ctx.prototipo_funcion() or ctx.llamada_funcion():
+            if ctx.getChild(1).getText() != ';': # Si no termina con ';' muestra un error,
+                print("Error Sintactico: se esperaba ';'")
+                return
+            
+
     def enterBloque(self, ctx:compiladoresParser.BloqueContext):
         """
         Método que se ejecuta al entrar en el contexto de la regla "bloque".
@@ -108,11 +122,23 @@ class MyListener (compiladoresListener):
         Maneja la salida de un contexto de asignación.
         """
 
-        if self.tabla_simbolos.buscarGlobal(ctx.getChild(0).getText()) is None:
+        identificador = self.tabla_simbolos.buscarGlobal(ctx.getChild(0).getText())
+        if identificador is None:
             # Notifica el uso de un ID sin declarar
             print("Error: El identificador '" + ctx.getChild(0).getText() + "' no esta definido")
             return
         
+        # Verifica si la asignación es válida
+        if ctx.getChild(1).getText() != '=':
+            print("Error: se esperaba '='") # Revisar
+            return
+
+        # Verifica si el valor asignado es correcto
+        if ctx.getChild(2) == ctx.opal():
+            identificador.setInicializado()
+        else:
+            print("Error: el valor asignado no es válido")
+                    
     """ ------------------------------------------------------------------------------------ """
 
     def exitFactor(self, ctx:compiladoresParser.FactorContext):
@@ -128,3 +154,4 @@ class MyListener (compiladoresListener):
                 return
             else:   # Si el ID fue declarado actualiza su estado a usado en caso que no lo este
                 self.tabla_simbolos.actualizarUsado(identificador.obtenerNombre())
+

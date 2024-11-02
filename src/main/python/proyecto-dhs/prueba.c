@@ -6,7 +6,7 @@ void main () {
 
     char t = 65;
     int a = 10;
-    int b;
+    int b = 10;
 
     while (b)
     {

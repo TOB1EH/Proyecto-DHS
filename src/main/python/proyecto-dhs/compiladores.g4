@@ -90,7 +90,6 @@ instruccion : declaracion PYC
             | prototipo_funcion PYC
             | funcion
             | llamada_funcion PYC
-            // | incremento
             | bloque
             ;
 
@@ -231,6 +230,6 @@ argumentos_a_funcion : oplogicos lista_argumentos_a_funcion
                      ;
 
 // lista de argumentos a funcion ya que una funcion puede recibir mas de un argumento
-lista_argumentos_a_funcion : COMA oplogicos lista_argumentos_a_funcion     
+lista_argumentos_a_funcion : COMA argumentos_a_funcion   
                            |
                            ;

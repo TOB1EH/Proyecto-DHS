@@ -19,9 +19,9 @@ def main(argv):
     tree = parser.programa()            # Empieza por la regla 'programa' (la raiz del arbol) y nos devuelve un arbol sintactico, el parser es el que dirige o guia
 
     # print(tree.toStringTree(recog=parser)) # arbol gramatical
-
-    caminante = Walker()                # Construye el objeto Visitor 
-    caminante.visitPrograma(tree)       # le pasa el arbol para que comience a caminar sobre el arbol terminado
-
+ 
+    # caminante = Walker()                # Construye el objeto Visitor 
+    # caminante.visitPrograma(tree)       # le pasa el arbol para que comience a caminar sobre el arbol terminado
+ 
 if __name__ == '__main__':
     main(sys.argv)

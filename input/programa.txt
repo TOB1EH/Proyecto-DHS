@@ -1,21 +1,15 @@
 // Comentario que deberia ser ignorado
 
-char hola = 10;
-
 void main () {
+    int a = 0
+    int b;
 
-    if (a == 0){
-        int x = 0, a, b, x; // Error Id ya en uso
-        float y = 0;
-        char c;
-        adios = 0; // Error variable no declarada
-    }
-    else {
-        double w;
-        hola = 10;
-        adios = 0; // Error variable no declarada
-    }
+    b = 22
+    b == 1;
 
+    c = 10;
+
+    return 0;
 }
 
 
