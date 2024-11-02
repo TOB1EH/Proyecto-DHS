@@ -86,10 +86,10 @@ instruccion : declaracion PYC
             | ifor
             | iif
             | ielse
-            | retornar
-            | prototipo_funcion
+            | retornar PYC
+            | prototipo_funcion PYC
             | funcion
-            | llamada_funcion
+            | llamada_funcion PYC
             // | incremento
             | bloque
             ;
@@ -190,9 +190,7 @@ iif : IF PA cond PC instruccion ;
 ielse : iif ELSE instruccion ;
 
 // Inicializacion
-init : asignacion
-     | declaracion // REVISAR
-     ;
+init : asignacion ;
 
 // Condicion del for y while
 cond : oplogicos ;
@@ -207,16 +205,20 @@ iter : ID INC // REVISAR
 
 retornar : RETURN oplogicos ;
 
-prototipo_funcion : tipo_dato ID PA argumentos PC ;
+prototipo_funcion : valor_retorno ID PA argumentos PC ;
 
-funcion : prototipo_funcion bloque ;
+funcion : prototipo_funcion bloque ; // Evaluar posibles problemas
+
+valor_retorno : tipo_dato
+              | VOID
+              ;
 
 // argumentos de una funcion
 argumentos : tipo_dato ID lista_argumentos
            |
            ;
 // lista de argumentos ya que una funcion puede recibir mas de un argumento
-lista_argumentos : COMA tipo_dato ID lista_argumentos
+lista_argumentos : COMA argumentos
                  |
                  ;
 
