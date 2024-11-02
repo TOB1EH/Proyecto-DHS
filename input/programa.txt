@@ -1,22 +1,22 @@
 // Comentario que deberia ser ignorado
 
-char t = 65;
-int t = 0;
+char hola = 10;
 
-if (a == 0){
-    int x = 0, a, b, w;
-    float y = 0;
-    char c;
-    
-}
-while (x) {
-    x = 1;
-}
-if (x == 1) {
-    int z = 1;
-}
+void main () {
 
+    if (a == 0){
+        int x = 0, a, b, x; // Error Id ya en uso
+        float y = 0;
+        char c;
+        adios = 0; // Error variable no declarada
+    }
+    else {
+        double w;
+        hola = 10;
+        adios = 0; // Error variable no declarada
+    }
 
+}
 
 
 

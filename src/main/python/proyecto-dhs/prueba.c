@@ -1,9 +1,20 @@
-#include <stdio.h>
+// Comentario que deberia ser ignorado
 
-int main() {
-    int n, p, int a;
+char hola = 10;
 
-    p = 10;
+void main () {
 
-    printf("%i\n", p);
+    char t = 65;
+    int a = 10;
+    int b;
+
+    while (b)
+    {
+        a = a + b;
+        return 0;
+    }
+    
 }
+
+
+
