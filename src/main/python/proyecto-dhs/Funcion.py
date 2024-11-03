@@ -6,3 +6,5 @@ class Funcion(ID):
         # self.args = list()
         self.args: list[ID] = []
     
+    def aregarArgumento(self, argumento: ID):
+        self.args.append(argumento)

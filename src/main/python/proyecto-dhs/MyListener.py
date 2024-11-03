@@ -15,6 +15,8 @@ class MyListener (compiladoresListener):
     dict_variables = {}                # Diccionario para almacenar variables temporales
     errores = []                       # Lista para almacenar errores encontrados
     advertencias = []                  # Lista para almacenar advertencias encontradas
+    funcion_actual = None              # Para rastrear la funcion actual
+    pila_argumentos = []               # Lista para almacenar los argumentos que espera una funcion
 
     def reporteErrores(self, ctx, tipo_error:str, mensaje:str):
         """
@@ -37,7 +39,7 @@ class MyListener (compiladoresListener):
         """
         Genera un reporte de advertencias para el compilador
         """
-        
+
         linea = ctx.start.line # Obtiene el número de línea donde se controno la advertencia desde el contexto
         self.advertencias.append(f"Advertencia en la linea {linea}: {mensaje}") # Agrega un mensaje de advertencia a la lista de advertencias, incluyendo la línea
 
@@ -115,6 +117,10 @@ class MyListener (compiladoresListener):
 
         # print(self.tabla_simbolos.mostrarContextoActual())  # Muestra el contenido del contexto actual
         self.tabla_simbolos.borrarContexto()                   # Borra el contexto actual
+
+        # Cuando salga del bloque de una función, limpiar función actual
+        if self.funcion_actual:
+            self.funcion_actual = None
     
     def exitDeclaracion(self, ctx:compiladoresParser.DeclaracionContext):
         """
@@ -277,4 +283,84 @@ class MyListener (compiladoresListener):
         if ctx.getChild(3).getText() != ')':
             self.reporteErrores(ctx, "Sintactico", "Falta parentesis de cierre")
             return
+
+    def exitPrototipo_funcion(self, ctx:compiladoresParser.FuncionContext):
+        """
+        Maneja la salida de un contexto de prototipo de función.
+        Es decir, mameja la declaracion de funciones.
+        """
+
+        tipo_retorno = ctx.getChild(0).getText().upper()
+        nombre = ctx.getChild(1).getText()
+
+        # Verificar si la función ya existe
+        if self.tabla_simbolos.buscarGlobal(nombre):
+            self.reporteErrores(ctx, "Semantico", f"Función '{nombre}' ya fue declarada")
+            return
+        
+        # Crear nueva función
+        funcion = Funcion(nombre, tipo_retorno)
+        self.funcion_actual = funcion # Guardamos la funcion actual.
+
+        # Procesamos los argumentos de la funcion, si existen
+        if str(ctx.getChild(3).getText()) != '': # Si la funcion tiene argumentos
+            self.procesarArgumentos(ctx.getChild(3), funcion)
+    
+        # Si la funcion no existe Agregar función a la tabla de símbolos
+        self.tabla_simbolos.agregarIdentificador(funcion)
+        print(f"Nueva funcion: '{self.tabla_simbolos.buscarLocal(nombre).obtenerNombre()}' agregada.\n")
+
+    def procesarArgumentos(self, argumentos, funcion: Funcion):
+        """
+        Procesa que los argumentos de una función no esten repetidos.
+        Si el argumento es valido lo guarda en la lista de argumentos 
+        de la función.
+        """
+
+        tipo_argumento = str(argumentos.getChild(0).getText().upper())
+        nombre_argumento = str(argumentos.getChild(1).getText())
+
+        # Crear y agregar el primer argumento de la funcion
+        arg_variable = Variable(nombre_argumento, tipo_argumento)
+        arg_variable.setInicializado()  # Los argumentos se consideran inicializados
+        funcion.aregarArgumento(arg_variable)
+        
+        if self.pila_argumentos: # Si la funcion tiene mas argumentos
+            while self.pila_argumentos: # recorre la lista de argumentos de la funcion 
+                argumento_pila = self.pila_argumentos.pop()
+                
+                for argumento in funcion.args: # Para validar que el argumento no se re
+                    if argumento.obtenerNombre() == str(argumento_pila.getChild(1).getText()):
+                        self.reporteErrores(argumentos, "Semantico", f"Parametro '{nombre_argumento}' duplicado en funcion '{funcion.obtenerNombre()}'")
+                        return
+                
+                arg_variable = Variable(str(argumento_pila.getChild(1).getText()) , str(argumento_pila.getChild(0).getText().upper()))
+                arg_variable.setInicializado()  # Los parámetros se consideran inicializados
+                funcion.aregarArgumento(arg_variable)
+
+        # Para vaciar la pila de nombres de parametros después de procesar la funcion
+        self.pila_argumentos.clear()
+
+    def exitLista_argumentos(self, ctx:compiladoresParser.FuncionContext):
+        """
+        Se ejecuta al final de la lista de argumentos de una función.
+        """
+
+        if ctx.getChildCount():
+            self.pila_argumentos.append(ctx.getChild(1))
+
+    def exitLlamada_funcion(self, ctx:compiladoresParser.FuncionContext):
+        """
+        Maneja las llamadas a funciones.
+        """
+
+        nombre_funcion = ctx.getChild(0).getText()
+        funcion = self.tabla_simbolos.buscarGlobal(nombre_funcion)
+
+        if funcion is None: # Si la funcion no existe en la tabla de simbolos, registra el error
+            self.reporteErrores(ctx, "Semantico", f"Funcion '{nombre_funcion}' no fue declarada")
+            return
+        
+        funcion.getUsado() # Si la funcion existe, se marca como usada por la invocacion
+                        
 
