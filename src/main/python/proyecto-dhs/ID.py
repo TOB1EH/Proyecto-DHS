@@ -5,6 +5,7 @@ class TipoDato(Enum):
     INT     = 1
     FLOAT   = 2
     CHAR    = 3
+    DOUBLE  = 4
 
 class ID(ABC):
     def __init__(self, nombre: str, tipo_dato: TipoDato):

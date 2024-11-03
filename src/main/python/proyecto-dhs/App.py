@@ -4,7 +4,7 @@ from antlr4 import *
 from compiladoresLexer  import compiladoresLexer
 from compiladoresParser import compiladoresParser
 from MyListener import MyListener
-from Walker import Walker
+# from Walker import Walker
 
 def main(argv):
     archivo = "input/programa.txt"
