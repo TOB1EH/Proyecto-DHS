@@ -1,10 +1,17 @@
 // Comentario que deberia ser ignorado
 
 void main () {
-    int a = 0
-    int b;
+    int a = 0;
+    int h123 = 0;
+    int b, w, v = 10;
 
-    b = 22
+    a = 5 + (a * 2));
+
+    while (a == 0 {
+        b = 0;
+    }
+
+    b = 22;
     b == 1;
 
     c = 10;
