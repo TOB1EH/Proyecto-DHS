@@ -1,22 +1,17 @@
 // Comentario que deberia ser ignorado
 
+int funcion(int x);
+
+int pepe(int y, char x);
+int pepe();
+
 void main () {
     int a = 0;
     int h123 = 0;
+
+    jorge(a, h123);
+
     int b, w, v = 10;
-
-    a = 5 + (a * 2));
-
-    while (a == 0 {
-        b = 0;
-    }
-
-    b = 22;
-    b == 1;
-
-    c = 10;
-
-    return 0;
 }
 
 
