@@ -2,6 +2,7 @@
 while a > 0 {  // Error: falta paréntesis
     a = a - 1;
 }
+int a[2] = {};
 
 // Error: formato incorrecto en lista de variables
 int a, , b;  // Error: comas consecutivas

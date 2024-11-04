@@ -206,7 +206,7 @@ retornar : RETURN oplogicos ;
 
 prototipo_funcion : valor_retorno ID PA argumentos PC ;
 
-funcion : prototipo_funcion bloque ; // Evaluar posibles problemas
+funcion : valor_retorno ID PA argumentos PC bloque ; // Evaluar posibles problemas
 
 valor_retorno : tipo_dato
               | VOID
@@ -217,7 +217,7 @@ argumentos : tipo_dato ID lista_argumentos
            |
            ;
 // lista de argumentos ya que una funcion puede recibir mas de un argumento
-lista_argumentos : COMA argumentos
+lista_argumentos : COMA tipo_dato ID lista_argumentos
                  |
                  ;
 
@@ -230,6 +230,6 @@ argumentos_a_funcion : oplogicos lista_argumentos_a_funcion
                      ;
 
 // lista de argumentos a funcion ya que una funcion puede recibir mas de un argumento
-lista_argumentos_a_funcion : COMA argumentos_a_funcion   
+lista_argumentos_a_funcion : COMA oplogicos lista_argumentos_a_funcion   
                            |
                            ;

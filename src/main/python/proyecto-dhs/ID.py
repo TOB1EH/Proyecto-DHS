@@ -45,3 +45,10 @@ class ID(ABC):
         Obtiene el nombre del ID.
         """
         return self._nombre
+    
+    def obtenerTipoDato(self):
+        """
+        Obtiene el tipo de dato del ID.
+        """
+
+        return self._tipo_dato

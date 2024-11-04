@@ -33,11 +33,12 @@ class TablaSimbolos:
         # Devuelve la instancia de la clase, ya sea la existente o la recién creada
         return cls._instancia
 
-    def agregarContexto(self, nuevo_contexto: Contexto):
+    def agregarContexto(self, nombre):
         """
         Agrega un nuevo contexto a la lista de la tabla de simbolos.
         """
         
+        nuevo_contexto = Contexto(nombre)
         self._contextos.append(nuevo_contexto)
 
     def borrarContexto(self):
@@ -114,6 +115,15 @@ class TablaSimbolos:
         if self._contextos:
             return self._contextos[-1].__str__()
 
+    def obtenerNombreContexto(self):
+        """
+        Retorna el nombre del Contexto actual
+        """
+
+        if self._contextos:
+            return self._contextos[-1].nombre
+        return "Sin Contexto"
+    
     def __str__(self):
         """
         Retorna el toString de la tabla de simbolos

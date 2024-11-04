@@ -2,10 +2,11 @@
 from ID import ID
 
 class Contexto:
-    def __init__(self):
+    def __init__(self, nombre="Global"):
         # self._tabla = {}
         # self._tabla = dict()
         self._tabla: dict[str, ID] = {} # Un Contexto es una tabla de ID's
+        self.nombre = nombre
 
     def agregarID (self, identificador: ID):
         """
@@ -24,9 +25,3 @@ class Contexto:
         Retorna una copia de la tabla de identificadores
         """
         return self._tabla
-
-    def __str__(self):
-        """
-        Devuelve una representación en cadena de la tabla de ID's
-        """
-        return f"Contexto(tabla={self._tabla})"
