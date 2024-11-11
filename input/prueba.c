@@ -1,31 +1,17 @@
 // Comentario que deberia ser ignorado
 
-char hola = 10;
+double hola = 77777.77777;
 
 void main () {
 
-    char t = 65;
-    int a = 10;
-    int b = 10;
+    int t = hola; 
 
-    while (b)
-        int x = 0;
+    if (t)
+        t = t * 2;
 
-    else 
-        int y = 0;
-
-
-    while (b)
-    {
-        a = a + b;
-        return 0;
-    }
-    
 }
 
-void funcion () {
-    return 10;
-}
+
 
 
 

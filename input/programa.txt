@@ -6,7 +6,11 @@ int pepe();
 void main () {
     float a = 10;
     int b = a;
-    in c = 9
+    int d = 10;
+    int c = 1 - b + a ;
+
+    if (b)
+        c = a;
 
     if (a)
         int x = 0;

@@ -189,10 +189,18 @@ class MyListener (compiladoresListener):
 
             self.tabla_simbolos.agregarIdentificador(variable)          # Agrega la variable a la tabla de símbolos en el contexto actual
             
-            print(f"Nueva variable: '{nombre}' de tipo '{tipo_dato}' agregada.\n")
+            print(f"Nueva variable: '{nombre}' de tipo '{tipo_dato}' agregada.\n") # Revisar para que no agregue el simbolo o solo reporte un error
 
             if str(ctx.getChild(2).getText()) != '': # Si el 3er hijo en la declaracion es distinto de vacio, existe una definicion
-                variable.setInicializado() # Marca la variable como inicializada si se proporciona un valor
+                if self.tipo_dato_obtenido: # Evaluar si los tipos de datos son compatibles en la asignacion
+                    if tipo_dato != self.tipo_dato_obtenido:
+                        self.reporteAdvertencias(ctx, "Sintactico: tipo de dato no compatible")
+                        return
+                    variable.setInicializado() # Marca la variable como inicializada si se proporciona un valor
+                    self.tipo_dato_obtenido = None
+                else:
+                    # Si no fuece un ID 
+                    variable.setInicializado() # Marca la variable como inicializada si se proporciona un valor
 
             # Maneja la declaración de múltiples variables (si es necesario)
             if self.dict_variables:    
@@ -232,9 +240,6 @@ class MyListener (compiladoresListener):
             else:
                 self.dict_variables.update({ctx.getChild(1).getText(): False})
 
-    def exitDefinicion(self, ctx:compiladoresParser.DefinicionContext):
-        pass
-
     def exitAsignacion(self, ctx:compiladoresParser.AsignacionContext):
         """
         Maneja la salida de un contexto de asignación.
@@ -247,10 +252,22 @@ class MyListener (compiladoresListener):
             # Notifica el uso de un ID sin declarar
             self.reporteErrores(ctx, "Semantico", f"El identificador '{ctx.getChild(0).getText()}' no esta definido")
             return
+        else: # Evaluar si los tipos de datos son compatibles en la asignacion
+            tipo_dato = identificador.obtenerTipoDato()
+            if self.tipo_dato_obtenido:
+                if tipo_dato != self.tipo_dato_obtenido:
+                    self.reporteAdvertencias(ctx, "Sintactico: tipo de dato no compatible")
+                    return
+                identificador.setInicializado() # Marca la variable como inicializada si se proporciona un valor
+                self.tipo_dato_obtenido = None
 
         # Verifica si el valor asignado es correcto
         if ctx.getChild(2) == ctx.opal():
             identificador.setInicializado() # Se inicializa la variable
+    
+    """ ----------------------------------------------------------- """
+
+    tipo_dato_obtenido = None 
 
     def exitFactor(self, ctx:compiladoresParser.FactorContext):
         """
@@ -264,7 +281,10 @@ class MyListener (compiladoresListener):
                 self.reporteErrores(ctx, "Semantico", f"El identificador '{ctx.getChild(0).getText()}' no esta definido")
                 return
             else:   # Si el ID fue declarado actualiza su estado a usado en caso que no lo este
+                self.tipo_dato_obtenido = identificador.obtenerTipoDato()
                 self.tabla_simbolos.actualizarUsado(identificador.obtenerNombre())
+        else: 
+            self.tipo_dato_obtenido = None
 
         # Manejo de parentesis en operaciones logicas:
         if ctx.PA():
