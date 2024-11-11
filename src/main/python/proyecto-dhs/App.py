@@ -1,4 +1,8 @@
 
+# Repo Git: https://github.com/TOB1EH/Proyecto-DHS
+# https://github.com/TOB1EH/Proyecto-DHS.git
+
+
 import sys
 from antlr4 import *
 from compiladoresLexer  import compiladoresLexer

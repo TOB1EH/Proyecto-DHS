@@ -9,11 +9,22 @@ void main () {
     int b = 10;
 
     while (b)
+        int x = 0;
+
+    else 
+        int y = 0;
+
+
+    while (b)
     {
         a = a + b;
         return 0;
     }
     
+}
+
+void funcion () {
+    return 10;
 }
 
 

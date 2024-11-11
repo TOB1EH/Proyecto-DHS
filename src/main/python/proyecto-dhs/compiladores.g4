@@ -89,6 +89,7 @@ instruccion : declaracion PYC
             | retornar PYC
             | prototipo_funcion PYC
             | funcion
+            | llamada_funcion_valor PYC
             | llamada_funcion PYC
             | bloque
             ;
@@ -220,6 +221,9 @@ argumentos : tipo_dato ID lista_argumentos
 lista_argumentos : COMA tipo_dato ID lista_argumentos
                  |
                  ;
+
+// Invocacion de una funcion que retorna un valor
+llamada_funcion_valor : ID ASIG llamada_funcion ;
 
 // Invocacion de una funcion
 llamada_funcion : ID PA argumentos_a_funcion PC ;

@@ -1,27 +1,21 @@
 // Comentario que deberia ser ignorado
 
-int funcion(int x);
-
-int pepe(int y, char x);
+int pepe(int x, char c);
 int pepe();
 
 void main () {
-    int a = 0;
-    int b, w, v = 10;
-    int h123 = 0;
-    if (h123) {
-        hola(h123, v);
-    }
-    else float g;
+    int a = 10
+    int b = a;
+
+    if (a)
+        int x = 0;
+
+    char w = 64;
+    pepe(a, w);
 }
 
-int pepe(int y, char x){
-    int o = 0;
-    return o;
-}
 
-char hola(int a, int b){
-    a = b;
-    return a;
+int pepe(int x, char c){
+    int w = x + c;
+    return w + 2;
 }
-
