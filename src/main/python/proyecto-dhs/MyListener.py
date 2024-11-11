@@ -189,7 +189,6 @@ class MyListener (compiladoresListener):
 
             self.tabla_simbolos.agregarIdentificador(variable)          # Agrega la variable a la tabla de símbolos en el contexto actual
             
-            # Para validar si realmente se estan agregando los ID's a la tabla de contextos en su contexto correspondiente
             print(f"Nueva variable: '{nombre}' de tipo '{tipo_dato}' agregada.\n")
 
             if str(ctx.getChild(2).getText()) != '': # Si el 3er hijo en la declaracion es distinto de vacio, existe una definicion
