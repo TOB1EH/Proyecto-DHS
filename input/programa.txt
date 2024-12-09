@@ -9,6 +9,10 @@ void main () {
     int d = 10;
     int c = 1 - b + a ;
 
+    else {
+        a = 0;
+    }
+
     if (b)
         c = a;
 
@@ -16,7 +20,7 @@ void main () {
         int x = 0;
 
     char w = 64;
-    pepe(a, w);
+    a = pepe(a, w);
 }
 
 
@@ -24,6 +28,7 @@ int pepe(int x, char c){
     int w = x + c;
     return w + 2;
 }
+int a;
 
 int hola (int a) {
     int b = a + 1;

@@ -7,7 +7,7 @@ void main () {
     int t = hola; 
 
     if (t)
-        t = t * 2;
+        int t = t * 2;
 
 }
 
