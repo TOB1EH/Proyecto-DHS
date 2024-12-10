@@ -1,1 +1,5 @@
-a = (4 + 16) > !b ;
+int a = 1;
+int b = 2;
+int c = b + a;
+a = b;
+

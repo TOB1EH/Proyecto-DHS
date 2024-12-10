@@ -8,10 +8,10 @@ from antlr4 import *
 from compiladoresLexer  import compiladoresLexer
 from compiladoresParser import compiladoresParser
 from MyListener import MyListener
-# from Walker import Walker
+from MyVisitor import MyVisitor
 
 def main(argv):
-    archivo = "input/programa.txt"
+    archivo = "input/opal.txt"
     if len(argv) > 1 :
         archivo = argv[1]
     input = FileStream(archivo)         # Entradas de Codigo Fuente
@@ -24,8 +24,8 @@ def main(argv):
 
     # print(tree.toStringTree(recog=parser)) # arbol gramatical
  
-    # caminante = Walker()                # Construye el objeto Visitor 
-    # caminante.visitPrograma(tree)       # le pasa el arbol para que comience a caminar sobre el arbol terminado
+    walker = MyVisitor()                # Construye el objeto Visitor 
+    walker.visitPrograma(tree)          # le pasa el arbol para que comience a caminar sobre el arbol terminado
  
 if __name__ == '__main__':
     main(sys.argv)

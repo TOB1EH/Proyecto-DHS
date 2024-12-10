@@ -1,14 +1,13 @@
 // Comentario que deberia ser ignorado
-
-double hola = 77777.77777;
+#include<stdio.h>
 
 void main () {
 
-    int t = hola; 
+    int a = 7;
+    int c = !a;
 
-    if (t)
-        int t = t * 2;
-
+    printf("%d\n", a);
+    printf("%d\n", c);
 }
 
 
