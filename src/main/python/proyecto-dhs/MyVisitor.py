@@ -12,9 +12,11 @@ class Temporal():
 
 class MyVisitor (compiladoresVisitor):
 
+    _instrucciones          = ''
     _temporales             = []
     _etiquetas              = []
     _identificadores        = []
+    _contador               = 0
     generadorDeTemporales   = Temporal()
 
     def visitPrograma(self, ctx: compiladoresParser.ProgramaContext):
@@ -40,15 +42,31 @@ class MyVisitor (compiladoresVisitor):
     
     # Visit a parse tree produced by compiladoresParser#instruccion.
     def visitInstruccion(self, ctx:compiladoresParser.InstruccionContext):
+        # Declaraciones
         if isinstance (ctx.getChild(0), compiladoresParser.DeclaracionContext):
             self.visitDeclaracion(ctx.getChild(0))
+            
+            if self._contador > 1:
+                self.file.write(self._temporales.pop() + ' =' + self._instrucciones + '\n')
+                self._instrucciones = ''
+                self._contador = 0
+            else:
+                id = self._identificadores[-1]
+                self.file.write(id + ' =' + self._instrucciones + '\n')
+                self._instrucciones = ''
+        
+        # Asignaciones
         elif isinstance (ctx.getChild(0), compiladoresParser.AsignacionContext):
             self.visitAsignacion(ctx.getChild(0))
+            
+            self.file.write(self._instrucciones + '\n')
+            self._instrucciones = ''
         else:
             return
 
     # Visit a parse tree produced by compiladoresParser#declaracion.
     def visitDeclaracion(self, ctx:compiladoresParser.DeclaracionContext):
+        # self._instrucciones += (ctx.getChild(1).getText() + " =")
         self._identificadores.append(ctx.getChild(1).getText())
         if ctx.getChild(2).getChildCount() != 0:
             self.visitDefinicion(ctx.getChild(2))
@@ -88,7 +106,19 @@ class MyVisitor (compiladoresVisitor):
     # Visit a parse tree produced by compiladoresParser#exp.
     def visitExp(self, ctx:compiladoresParser.ExpContext):
         self.visitTerm(ctx.getChild(0))
+        self.visitE(ctx.getChild(1))
         return
+    
+    # Visit a parse tree produced by compiladoresParser#e.
+    def visitE(self, ctx:compiladoresParser.EContext):
+        if self._contador >= 1:
+            self._temporales.append(self.generadorDeTemporales.getTemporal())
+            self._instrucciones += ('\n' + self._identificadores.pop() + ' =' + self._temporales[-1])
+        if ctx.getChildCount() != 0:
+            self._contador += 1
+            self._instrucciones += (' ' + ctx.getChild(0).getText())
+            self.visitTerm(ctx.getChild(1))
+        return 
 
     # Visit a parse tree produced by compiladoresParser#term.
     def visitTerm(self, ctx:compiladoresParser.TermContext):
@@ -98,13 +128,11 @@ class MyVisitor (compiladoresVisitor):
     # Visit a parse tree produced by compiladoresParser#factor.
     def visitFactor(self, ctx:compiladoresParser.FactorContext):
         if ctx.getChildCount() == 1:
-            id = self._identificadores.pop()
-            self.file.write(id + '=' + ctx.getChild(0).getText() + '\n')
-            return
+            self._instrucciones += ' ' + ctx.getChild(0).getText()
     
     # Visit a parse tree produced by compiladoresParser#asignacion.
     def visitAsignacion(self, ctx:compiladoresParser.AsignacionContext):
-        self._identificadores.append(ctx.getChild(0).getText())
+        self._instrucciones += (ctx.getChild(0).getText() + ' ' + ctx.getChild(1).getText())
         self.visitOpal(ctx.getChild(2))
         # Cuando la asignacion no es directa (uso temporales)
         return
