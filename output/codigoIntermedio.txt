@@ -1,5 +1,7 @@
 a = 1
 b = 2
-c = b + a
-a = b
-c =t0
+w = 10
+t0 = b + a
+c = t0 + 1
+c = t1 - w
+a = b + 2
