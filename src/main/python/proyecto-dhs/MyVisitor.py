@@ -32,14 +32,12 @@ class MyVisitor (compiladoresVisitor):
 
     # Visit a parse tree produced by compiladoresParser#instrucciones.
     def visitInstrucciones(self, ctx:compiladoresParser.InstruccionesContext):
-        self.visitInstruccion(ctx.getChild(0))
-
-        if ctx.getChild(1).getChildCount() != 0:
-            self.visitInstrucciones(ctx.getChild(1))
-        
         if ctx.getChildCount() == 0:
             return
-    
+        
+        self.visitInstruccion(ctx.getChild(0))
+        self.visitInstrucciones(ctx.getChild(1))
+            
     # Visit a parse tree produced by compiladoresParser#instruccion.
     def visitInstruccion(self, ctx:compiladoresParser.InstruccionContext):
         # Declaraciones
