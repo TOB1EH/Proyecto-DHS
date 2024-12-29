@@ -161,12 +161,36 @@ class MyVisitor (compiladoresVisitor):
     # Visit a parse tree produced by compiladoresParser#term.
     def visitTerm(self, ctx:compiladoresParser.TermContext):
         self.visitFactor(ctx.getChild(0))
+        self.visitT(ctx.getChild(1))
         return
 
     # Visit a parse tree produced by compiladoresParser#factor.
     def visitFactor(self, ctx:compiladoresParser.FactorContext):
         if ctx.getChildCount() == 1:
             self._instrucciones += ' ' + ctx.getChild(0).getText()
+
+    # Visit a parse tree produced by compiladoresParser#t.
+    def visitT(self, ctx:compiladoresParser.TContext):
+        if ctx.getChildCount() == 0:
+            return
+        
+        if ctx.getChild(2).getChildCount() > 0:
+            if self.flag_temporal is False:
+                self._temporales.append(self.generadorDeTemporales.getTemporal())
+                self.flag_temporal = True
+            else:
+                self._temporales.append(self.generadorDeTemporales.getTemporal())
+                self._instrucciones += ('\n' + self._temporales[-1] + ' = ' + self._temporales[-2])
+
+        # Si no hay más operaciones, obtenemos el valor de la expresión
+        else:
+            if self.flag_temporal is True:
+                self._instrucciones += ('\n' + self._identificadores[-1] + ' = ' + self._temporales[-1])
+        
+        self._instrucciones += (' ' + ctx.getChild(0).getText()) # Agrega el operador (+ o -)
+        self.visitFactor(ctx.getChild(1))
+        self.visitT(ctx.getChild(2))
+        
     
     # Visit a parse tree produced by compiladoresParser#asignacion.
     def visitAsignacion(self, ctx:compiladoresParser.AsignacionContext):

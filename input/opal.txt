@@ -1,10 +1,37 @@
 int a = 1;
 int b = 2;
 int w = 10
-char v = 1;
-int x = 2;
-int c = 1 + a + 1 - w - 3 + 11;
-int s = 9 + v + x
-a = b + 2 - 2 + 4;
+int c = 1 + b * a - w;
+
+int v = a * b * c / w
+
+int x = 10 + a + b;
+
+//t0 = b * a
+//t1 = b / z
+//t2 = t0 - w
+//c = t2 - t1
+
+//t1 = t0 - w
+//c = t1 - b
+
+
+//x = 3 * y + (5 * z) / 2 // Operaciones de mas de tres direcciones
+
+/* Entonces tengo que desglozar la operacion en partes: */
+//t0 = 3 * y
+//t1 = 5 * z
+//t2 = t1 / 2
+//t3 = t0 + t2
+//x = t3
+
+
+
+
+
+// char v = 1;
+// int x = 2;
+// int s = 9 + v + x
+// a = b + 2 - 2 + 4;
 
 
