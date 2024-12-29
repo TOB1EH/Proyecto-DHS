@@ -16,7 +16,7 @@ class MyVisitor (compiladoresVisitor):
     _temporales             = []
     _etiquetas              = []
     _identificadores        = []
-    _contador               = 0
+    flag_temporal = False
     generadorDeTemporales   = Temporal()
 
     def visitPrograma(self, ctx: compiladoresParser.ProgramaContext):
@@ -46,16 +46,15 @@ class MyVisitor (compiladoresVisitor):
         if isinstance (ctx.getChild(0), compiladoresParser.DeclaracionContext):
             self.visitDeclaracion(ctx.getChild(0))
             
-            if self._contador != 0:
-                #self.file.write(self._instrucciones + '\n')
-                
+            if self.flag_temporal is True:
                 self.file.write(self._temporales.pop(0) + ' =' + self._instrucciones + '\n')
                 self._instrucciones = ''
-                self._contador = 0
+                self.flag_temporal = False
             else:
-                id = self._identificadores.pop()
-                self.file.write(id + ' =' + self._instrucciones + '\n')
+                self.file.write(self._identificadores.pop() + ' =' + self._instrucciones + '\n')
                 self._instrucciones = ''
+
+            self._temporales.clear()
         
         # Asignaciones
         elif isinstance (ctx.getChild(0), compiladoresParser.AsignacionContext):
@@ -63,19 +62,17 @@ class MyVisitor (compiladoresVisitor):
             
             self.file.write(self._instrucciones + '\n')
             self._instrucciones = ''
+            self._temporales.clear()
         else:
             return
 
     # Visit a parse tree produced by compiladoresParser#declaracion.
     def visitDeclaracion(self, ctx:compiladoresParser.DeclaracionContext):
-        # self._instrucciones += (ctx.getChild(1).getText() + " =")
         self._identificadores.append(ctx.getChild(1).getText())
-        # self._temporales.append(ctx.getChild(1).getText())
-        if ctx.getChild(2).getChildCount() != 0:
-            self.visitDefinicion(ctx.getChild(2))
-        else:
+        if ctx.getChild(2).getChildCount() == 0:
             return
-        
+        self.visitDefinicion(ctx.getChild(2))
+    
     # Visit a parse tree produced by compiladoresParser#definicion.
     def visitDefinicion(self, ctx:compiladoresParser.DefinicionContext):
         self.visitOpal(ctx.getChild(1))
@@ -125,8 +122,6 @@ class MyVisitor (compiladoresVisitor):
         
         int c = b + a + 1 - w - x + y;
 
-        
-
         t0 = b + a
         t1 = t0 + 1
         t2 = t1 - w
@@ -135,23 +130,35 @@ class MyVisitor (compiladoresVisitor):
 
         int a = c + w
 
+
+        int b = a + c - w - a;
+        t0 = a + c
+        b = t0 - w
+        
+        
+        b = a + c;
+
         """
 
-
-        if ctx.getChildCount() != 0:
-            if self._contador >= 1:
+        if ctx.getChildCount() == 0:
+            return
+        
+        if ctx.getChild(2).getChildCount() > 0:
+            if self.flag_temporal is False:
                 self._temporales.append(self.generadorDeTemporales.getTemporal())
+                self.flag_temporal = True
+            else:
+                self._temporales.append(self.generadorDeTemporales.getTemporal())
+                self._instrucciones += ('\n' + self._temporales[-1] + ' = ' + self._temporales[-2])
+        
+        # Si no hay más operaciones, obtenemos el valor de la expresión
+        else:
+            if self.flag_temporal is True:
                 self._instrucciones += ('\n' + self._identificadores[-1] + ' = ' + self._temporales[-1])
-                # self._instrucciones += ('\n' + self._temporales[-2] + ' = ' + self._temporales[-1])
-
-                # self._temporales.append(self.generadorDeTemporales.getTemporal())
-                # self._instrucciones += ('\n' + self._temporales[-1] + ' = ' + self._temporales.pop(0))
-
-            self._contador += 1
-            self._instrucciones += (' ' + ctx.getChild(0).getText())
-            self.visitTerm(ctx.getChild(1))
-            self.visitE(ctx.getChild(2))
-        return
+        
+        self._instrucciones += (' ' + ctx.getChild(0).getText()) # Agrega el operador (+ o -)
+        self.visitTerm(ctx.getChild(1))
+        self.visitE(ctx.getChild(2))
 
     # Visit a parse tree produced by compiladoresParser#term.
     def visitTerm(self, ctx:compiladoresParser.TermContext):

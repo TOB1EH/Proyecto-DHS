@@ -1,7 +1,10 @@
 int a = 1;
 int b = 2;
 int w = 10
-int c = b + a + 1 - w;
-a = b + 2;
+char v = 1;
+int x = 2;
+int c = 1 + a + 1 - w - 3 + 11;
+int s = 9 + v + x
+a = b + 2 - 2 + 4;
 
 
