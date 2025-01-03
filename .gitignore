@@ -9,3 +9,4 @@ compiladores*.py
 *.class
 *.jar
 *.tokens
+.codegpt
