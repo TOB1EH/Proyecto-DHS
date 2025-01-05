@@ -25,7 +25,7 @@ def main(argv):
     # print(tree.toStringTree(recog=parser)) # arbol gramatical
  
     walker = MyVisitor()                # Construye el objeto Visitor 
-    walker.visitPrograma(tree)          # le pasa el arbol para que comience a caminar sobre el arbol terminado
+    walker.visitPrograma(tree)          # Recorre el arbol sintactico correctamente construido
  
 if __name__ == '__main__':
     main(sys.argv)
