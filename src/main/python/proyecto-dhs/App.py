@@ -1,6 +1,5 @@
 
 # Repo Git: https://github.com/TOB1EH/Proyecto-DHS
-# https://github.com/TOB1EH/Proyecto-DHS.git
 
 
 import sys
@@ -11,7 +10,9 @@ from MyListener import MyListener
 from MyVisitor import MyVisitor
 
 def main(argv):
-    archivo = "input/opal.txt"
+    # archivo = "input/opal.txt"
+    archivo = "input/prueba.c"
+
     if len(argv) > 1 :
         archivo = argv[1]
     input = FileStream(archivo)         # Entradas de Codigo Fuente

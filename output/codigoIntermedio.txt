@@ -1,5 +1,8 @@
-y = 10
-t0 = 12 * 2
-t1 = t0 / 4
-t2 = t1 * 7
-x = 2 - t2
+Declaracion de la variable x
+y = 1
+z = 0
+t0 = None / y
+t2 = None / y
+t4 = 5 * None
+t5 = None + t4
+x = 1
