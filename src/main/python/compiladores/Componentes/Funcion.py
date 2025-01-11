@@ -1,4 +1,4 @@
-from ID import ID, TipoDato
+from .ID import ID, TipoDato
 
 class Funcion(ID):
     def __init__(self, nombre: str, tipo_dato: TipoDato):

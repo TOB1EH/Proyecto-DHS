@@ -1,6 +1,6 @@
 
-from Contexto import Contexto
-from ID import ID
+from .Contexto import Contexto
+from .ID import ID
 
 class TablaSimbolos:
     _instancia = None # atributo privado para almacenar la referencia instancia unica de la clase 

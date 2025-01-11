@@ -1,5 +1,5 @@
 
-from ID import ID
+from .ID import ID
 
 class Contexto:
     def __init__(self, nombre="Global"):

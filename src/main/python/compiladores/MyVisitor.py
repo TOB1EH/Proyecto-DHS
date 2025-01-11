@@ -1,5 +1,5 @@
-from compiladoresVisitor import compiladoresVisitor
-from compiladoresParser import compiladoresParser
+from .compiladoresVisitor import compiladoresVisitor
+from .compiladoresParser import compiladoresParser
 
 class Temporal():
     def __init__(self):

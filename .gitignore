@@ -4,7 +4,7 @@ target
 .antlr
 __pycache__
 compiladores*.java
-compiladores*.py
+# compiladores*.py
 *.out
 *.class
 *.jar

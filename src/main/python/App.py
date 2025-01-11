@@ -4,10 +4,10 @@
 
 import sys
 from antlr4 import *
-from compiladoresLexer  import compiladoresLexer
-from compiladoresParser import compiladoresParser
-from MyListener import MyListener
-from MyVisitor import MyVisitor
+from compiladores.compiladoresLexer  import compiladoresLexer
+from compiladores.compiladoresParser import compiladoresParser
+from compiladores.MyListener import MyListener
+from compiladores.MyVisitor import MyVisitor
 
 def main(argv):
     # archivo = "input/opal.txt"

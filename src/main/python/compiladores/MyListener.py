@@ -1,8 +1,8 @@
-from compiladoresListener import compiladoresListener
-from compiladoresParser import compiladoresParser
-from TablaSimbolos import TablaSimbolos
-from Variable import Variable
-from Funcion import Funcion
+from .compiladoresListener import compiladoresListener
+from .compiladoresParser import compiladoresParser
+from .Componentes.TablaSimbolos import TablaSimbolos
+from .Componentes.Variable import Variable
+from .Componentes.Funcion import Funcion
 
 class MyListener (compiladoresListener):
     """
