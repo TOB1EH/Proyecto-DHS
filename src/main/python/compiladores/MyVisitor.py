@@ -30,6 +30,7 @@ class MyVisitor (compiladoresVisitor):
         self.operando1               = None
         self.operando2               = None
         self.operador                = None
+        self.isComparador            = False
         self.isSumador               = False
         self.isParentesisOperando2   = False
 
@@ -143,9 +144,14 @@ class MyVisitor (compiladoresVisitor):
     #     return self.visitChildren(ctx)
 
 
-    # # Visit a parse tree produced by compiladoresParser#logico.
-    # def visitLogico(self, ctx:compiladoresParser.LogicoContext):
-    #     return self.visitChildren(ctx)
+    # Visit a parse tree produced by compiladoresParser#logico.
+    def visitLogico(self, ctx:compiladoresParser.LogicoContext):
+        self.visitConjunto(ctx.getChild(0))
+
+        # if self.isComparador:
+        #     self.visitConjunto(ctx.getChild(0))
+        #     self.isComparador = False
+
 
 
     # # Visit a parse tree produced by compiladoresParser#land.elf.operando1
@@ -155,26 +161,431 @@ class MyVisitor (compiladoresVisitor):
 
     # Visit a parse tree produced by compiladoresParser#conjunto.
     def visitConjunto(self, ctx:compiladoresParser.ConjuntoContext):
-        self.visitC(ctx.getChild(0))
+        
+        
+        """ ------------------------------------------ Funcion --------------------------------------------------- """
+        def visitarSubConjunto (ctx):
+            # Visita C
+            self.visitC(ctx.getChild(0))
+    
+            # Si la bandera esta activa, recorro el arbol para comparar los terminos de igualdad
+            if self.isComparador:
+                self.visitC(ctx.getChild(0)) # Los terminos del conjunto se ecuentran dentro de C
+                # super().visitC(ctx)         
+                self.isComparador = False    # Reseteo la bandera
+        """ -------------------------------------- Fin de la Funcion --------------------------------------------- """
+        
 
 
-    # # Visit a parse tree produced by compiladoresParser#igualdad.
-    # def visitIgualdad(self, ctx:compiladoresParser.IgualdadContext):
-    #     return self.visitChildren(ctx)
+
+        # # Si el hijo 1 (Igualdad) no es vacio, entonces hay una comparacion de igualdad
+        # if ctx.getChild(1).getChildCount() != 0:
+        #     # Si la bandera es True, estoy en la segunda pasada encargada de hacer las comparaciones de igualdad a las operaciones
+        #     if self.isComparador:
+
+        #         # Si el hijo 0 (C) tiene un hijo 1 (Comparar) vacio, entonces no hay operacion de comparacion
+        #         cond1 = ctx.getChild(0).getChild(1).getChildCount() == 0
+
+        #         # Si el hijo 0 (C) tiene un hijo 0 (Exp) tiene un hijo 1 (E) vacio, entonces no hay operacion de suma/resta
+        #         cond2 = ctx.getChild(0).getChild(0).getChild(1).getChildCount() == 0
+
+        #         # Si el hijo 0 (C) tiene un hijo 0 (Exp) tiene un hijo 0 (Term) que tiene un hijo 1 (T) vacio, entonces es un termino simple
+        #         cond3 = ctx.getChild(0).getChild(0).getChild(0).getChild(1).getChildCount() == 0
+
+
+        #         # Entonces si se cumplen las condiciones, operando1 es un termino simple
+        #         if cond1 and cond2 and cond3:
+        #             self.isComparador = False
+        #             visitarSubConjunto(ctx)
+        #             self.isComparador = True
+
+        #         # De lo contrario
+        #         else:
+        #             self.operando1 = self.temporales.pop(0)
+                
+        #         # # Si el hijo 1 (E) tiene un hijo 1 (Term) que tiene un hijo 0 (Factor) distinto de 3, entonces no hay operaciones entre parentesis
+        #         # if ctx.getChild(1).getChild(1).getChild(0).getChildCount() != 3:
+                
+        #         """ Ver como evaluar para que solo se cree ciertas veces """
+        #         # Genero un temporal
+        #         self.temporales.append(self.generadorDeTemporales.getTemporal())
+
+        #         # Visita el hijo 1 (Igualdad) para obtener la siguiente operacion
+        #         self.visitIgualdad(ctx.getChild(1))
+
+        #     # Si la bandera es False, estoy en la primera pasada en busca operaciones de comparacion (<=, >=, <, >)
+        #     else:
+        #         # Visito al subconjunto en busca de operaciones de comparacion
+        #         visitarSubConjunto(ctx)
+
+        #         # Visito Igualdad  en busca de comparaciones de igualdad
+        #         self.visitIgualdad(ctx.getChild(1))
+
+        #         # Al activar esta banera se realizara la segunda pasada para hacer comparaciones de igualdad
+        #         self.isComparador = True
+
+        # # De lo contrario no hay comparaciones de igualdad, asi que solo visita al subconjunto en busca de operaciones de comparacion
+        # else:                
+        #     visitarSubConjunto(ctx)
+
+        """ ------------------------------------------------------------------------------------- """
+
+        # Si el hijo 1 (Igualdad) no es vacio, entonces hay una comparacion de igualdad
+        if ctx.getChild(1).getChildCount() != 0:
+
+                # Si el hijo 0 (C) tiene un hijo 1 (Comparar) vacio, entonces no hay operacion de comparacion
+                cond1 = ctx.getChild(0).getChild(1).getChildCount() == 0
+
+                # Si el hijo 0 (C) tiene un hijo 0 (Exp) tiene un hijo 1 (E) vacio, entonces no hay operacion de suma/resta
+                cond2 = ctx.getChild(0).getChild(0).getChild(1).getChildCount() == 0
+
+                # Si el hijo 0 (C) tiene un hijo 0 (Exp) tiene un hijo 0 (Term) que tiene un hijo 1 (T) vacio, entonces es un termino simple
+                cond3 = ctx.getChild(0).getChild(0).getChild(0).getChild(1).getChildCount() == 0
+
+
+                # Entonces si se cumplen las condiciones, operando1 es un termino simple
+                if cond1 and cond2 and cond3:
+                    visitarSubConjunto(ctx)
+
+                # De lo contrario
+                else:
+                    visitarSubConjunto(ctx)
+                    self.operando1 = self.temporales.pop(0)
+                
+                
+                """ Ver como evaluar para que solo se cree ciertas veces """
+                # # Genero un temporal
+                self.temporales.append(self.generadorDeTemporales.getTemporal())
+
+                # Visito Igualdad  en busca de comparaciones de igualdad
+                self.visitIgualdad(ctx.getChild(1))
+
+        # De lo contrario no hay comparaciones de igualdad, asi que solo visita al subconjunto en busca de operaciones de comparacion
+        else:                
+            visitarSubConjunto(ctx)
+
+
+        
+
+
+    # Visit a parse tree produced by compiladoresParser#igualdad.
+    def visitIgualdad(self, ctx:compiladoresParser.IgualdadContext):
+        # Valida que la regla gramatical no este vacia
+        if ctx.getChildCount() == 0:
+            return
+        
+        """ ------------------------------------------ Funcion --------------------------------------------------- """
+        def visitarSubConjunto (ctx):
+            # Visita C
+            self.visitC(ctx.getChild(1))
+    
+            # Si la bandera esta activa, recorro el arbol para comparar los terminos de igualdad
+            if self.isComparador:
+                self.visitC(ctx.getChild(1)) # Los terminos del conjunto se ecuentran dentro de C
+                # super().visitC(ctx)         
+                self.isComparador = False    # Reseteo la bandera
+        """ -------------------------------------- Fin de la Funcion --------------------------------------------- """
+
+        
+        # if self.isComparador:
+        #     # Guarda el valor actual del operando1
+        #     operando1 = self.operando1
+
+        #     # Si el hijo 1 (C) tiene un hijo 1 (Comparar) vacio, entonces no hay operacion de comparacion
+        #     cond1 = ctx.getChild(1).getChild(1).getChildCount() == 0
+            
+        #     # Si el hijo 1 (C) tiene un hijo 0 (Exp) tiene un hijo 1 (E) vacio, entonces no hay operacion de suma/resta
+        #     cond2 = ctx.getChild(1).getChild(0).getChild(1).getChildCount() == 0
+
+        #     # Si el hijo 1 (C) tiene un hijo 0 (Exp) tiene un hijo 0 (Term) que tiene un hijo 1 (T) vacio, entonces es un termino simple
+        #     cond3 = ctx.getChild(1).getChild(0).getChild(0).getChild(1).getChildCount() == 0
+
+
+        #     if cond1 and cond2 and cond3:
+        #         self.isComparador = False
+        #         visitarSubConjunto(ctx)
+        #         self.isComparador = True
+
+        #         self.operando2 = self.operando1
+
+        #     # De lo contrario
+        #     else:
+        #         self.operando2 = self.temporales.pop(0)
+
+        #         if not self.temporales: self.temporales.append(self.generadorDeTemporales.getTemporal())
+
+        #     self.operador = ctx.getChild(0).getText()
+           
+        #     # Reasigno el valor original del operando1
+        #     self.operando1 = operando1
+
+        #     # Escribe en el archivo de salida la suma/resta de los terminos igualados a un temporal generado
+        #     self.file.write(f'{self.temporales[-1]} = {self.operando1} {self.operador} {self.operando2}\n')
+
+            
+        #     # Si el hijo 2 (igualdad) no es vacio, hay mas operaciones de comparacion de igualdad
+        #     if ctx.getChild(2).getChildCount() != 0:
+        #         # Genero un temporal para guardar el resultado de la sigueinte operacion
+        #         temporal = self.generadorDeTemporales.getTemporal()
+                
+        #         # Operando1 para la siguiente operacion sera el temporal generado en la operacion actual
+        #         self.operando1 = self.temporales.pop()
+
+        #         # Agrego el temporal generado a la lista de temporales
+        #         self.temporales.append(temporal)
+                
+        #         # Visita Igualdad para obtener el resultado de la siguiente operacion de suma/resta
+        #         self.visitIgualdad(ctx.getChild(2))
+
+
+        # # De lo contrario, estoy en la primera pasada en busca de comparaciones entre operaciones
+        # else:
+        #     # Si el hijo 2 (Igualdad) no es vacio, entonces hay mas comparaciones de igualdad
+        #     if ctx.getChild(2).getChildCount() != 0:
+                
+        #         visitarSubConjunto(ctx)
+                
+        #         # Visita Igualdad en busca de la siguiente operacion de comparacion de igualdad
+        #         self.visitIgualdad(ctx.getChild(2))
+
+
+        #     # De lo contrario no hay mas comparaciones de igualdad
+        #     else:
+        #         visitarSubConjunto(ctx)
+        
+
+        """ ------------------------------------------------------------------------------------------------------------- """
+
+        # if ctx.getChild(2).getChildCount() != 0:
+        # Guarda el valor actual del operando1
+        operando1 = self.operando1
+        
+        # Si el hijo 1 (C) tiene un hijo 1 (Comparar) vacio, entonces no hay operacion de comparacion
+        cond1 = ctx.getChild(1).getChild(1).getChildCount() == 0
+        
+        # Si el hijo 1 (C) tiene un hijo 0 (Exp) tiene un hijo 1 (E) vacio, entonces no hay operacion de suma/resta
+        cond2 = ctx.getChild(1).getChild(0).getChild(1).getChildCount() == 0
+        
+        # Si el hijo 1 (C) tiene un hijo 0 (Exp) tiene un hijo 0 (Term) que tiene un hijo 1 (T) vacio, entonces es un termino simple
+        cond3 = ctx.getChild(1).getChild(0).getChild(0).getChild(1).getChildCount() == 0
+        
+        # Entonces si se cumplen estas condiciones
+        if cond1 and cond2 and cond3:
+            visitarSubConjunto(ctx)
+            self.operando2 = self.operando1
+        
+        # De lo contrario
+        else:
+            visitarSubConjunto(ctx)
+            
+            self.operando2 = self.temporales.pop(0)
+            # if not self.temporales: self.temporales.append(self.generadorDeTemporales.getTemporal())
+        
+        
+        self.operador = ctx.getChild(0).getText()
+        
+        # Reasigno el valor original del operando1
+        self.operando1 = operando1
+        
+        # Escribe en el archivo de salida la suma/resta de los terminos igualados a un temporal generado
+        self.file.write(f'{self.temporales[-1]} = {self.operando1} {self.operador} {self.operando2}\n')
+        
+        # Si el hijo 2 (igualdad) no es vacio, hay mas operaciones de comparacion de igualdad
+        if ctx.getChild(2).getChildCount() != 0:
+        
+            # Genero un temporal para guardar el resultado de la sigueinte operacion
+            temporal = self.generadorDeTemporales.getTemporal()
+            
+            # Operando1 para la siguiente operacion sera el temporal generado en la operacion actual
+            self.operando1 = self.temporales.pop()
+            
+            # Agrego el temporal generado a la lista de temporales
+            self.temporales.append(temporal)
+            
+            # Visita Igualdad para obtener el resultado de la siguiente operacion de suma/resta
+            self.visitIgualdad(ctx.getChild(2))
+
+   
+        # # De lo contrario no hay mas comparaciones de igualdad
+        # else:
+        #     visitarSubConjunto(ctx)
 
 
     # Visit a parse tree produced by compiladoresParser#c.
     def visitC(self, ctx:compiladoresParser.CContext):
-        self.visitExp(ctx.getChild(0))
         
-        # Si la bandera es True recorro el arbol para sumar los terminos
-        if self.isSumador:
-            super().visitExp(ctx) # Los terminos se encuentran dentro de Exp (expresion)
-            self.isSumador = False # Reseteo la bandera
+        """ ------------------------------------------ Funcion --------------------------------------------------- """
+        def visitarExpresion (ctx):
+            """ 
+                Visita la regla gramatical Exp, y evalua si la bandera para el segundo recorrido esta activa para 
+                sumar/restar los terminos obtenidos en la primera pasada
+            """
 
-    # # Visit a parse tree produced by compiladoresParser#comparar.
-    # def visitComparar(self, ctx:compiladoresParser.CompararContext):
-    #     return self.visitChildren(ctx)
+            # Visita Exp
+            self.visitExp(ctx.getChild(0))
+
+            # Si la bandera es True recorro el arbol para sumar los terminos
+            if self.isSumador:
+                self.visitExp(ctx.getChild(0)) # Los terminos se encuentran dentro de Exp (expresion)
+                # super().visitExp(ctx) 
+                self.isSumador = False # Reseteo la bandera
+        """ -------------------------------------- Fin de la Funcion --------------------------------------------- """
+
+        
+        # Si el hijo 1 (Comparar) no es vacio, entonces hay una operacion de comparacion
+        if ctx.getChild(1).getChildCount() != 0:
+            # Si la bandera es True, estoy en la segunda pasada encargada de comparar las operaciones
+            if self.isComparador:
+
+                # Si el hijo 0 (Exp) tiene un hijo 1 (E) vacio, entonces no hay operacion de suma/resta
+                cond1 = ctx.getChild(0).getChild(1).getChildCount() == 0
+
+                # Si el hijo 0 (Exp) tiene un hijo 0 (Term) tiene un hijo 1 (T) vacio, entonces es un termino simople
+                cond2 = ctx.getChild(0).getChild(0).getChild(1).getChildCount() == 0
+
+                # # Si el hijo 0 (Exp) tiene un hijo 1 (E) vacio, entonces no hay operacion de suma/resta
+                # if ctx.getChild(0).getChild(1).getChildCount() == 0:
+                #     # Si el hijo 0 (Exp) tiene un hijo 0 (Term) tiene un hijo 1 (T) vacio, entonces es un termino simople
+                #     if ctx.getChild(0).getChild(0).getChild(1).getChildCount() == 0:
+                
+                # Entonces si ambas se cumplen:
+                if cond1 and cond2:
+                    visitarExpresion(ctx)
+               
+                # De lo contrario
+                else:
+                    self.operando1 = self.temporales.pop(0)
+
+                    # # Si la pila de temporales esta vacia, debo crear otro para asignar la operacion actual:
+                    # if not self.temporales: self.temporales.append(self.generadorDeTemporales.getTemporal())
+                
+                """ Ver como evaluar para que solo se cree ciertas veces """
+                # Genero un temporal para la comparacion
+                self.temporales.append(self.generadorDeTemporales.getTemporal()) # Como evaluar si debo crear o no el temporal
+
+                # Visito Comparar en busca de operaciones de comparacion
+                self.visitComparar(ctx.getChild(1))
+
+            # Si la bandera es False, estoy en la primera pasada en busca operaciones de suma/resta
+            else:
+                # # Si el hijo 0 (Exp) tiene un hijo 1 (E) no vacio, hay una operacion de suma/resta
+                # if ctx.getChild(0).getChild(1).getChildCount() != 0:
+                #     visitarExpresion(ctx)
+
+                visitarExpresion(ctx)
+
+                # Visito Comparar en busca de operaciones de comparacion
+                self.visitComparar(ctx.getChild(1))
+
+                # Como primero busco operaciones de suma/resta y existen mas comparaciones, debo evaluar dichas comparaciones entre si
+                self.isComparador = True
+                # Al activar esta bandera se realizara la segunda pasada para comparar las operaciones obtenidas
+
+        # De lo contrario no hay mas comparaciones
+        else:
+            visitarExpresion(ctx)
+
+
+    # Visit a parse tree produced by compiladoresParser#comparar.
+    def visitComparar(self, ctx:compiladoresParser.CompararContext):
+        # Valida que la regla gramatical no este vacia
+        if ctx.getChildCount == 0:
+            return
+        
+        """ ------------------------------------------ Funcion --------------------------------------------------- """
+        def visitarExpresion (ctx):
+            """ 
+                Visita la regla gramatical Exp, y evalua si la bandera para el segundo recorrido esta activa para 
+                sumar/restar los terminos obtenidos en la primera pasada
+            """
+
+            # Visita Exp
+            self.visitExp(ctx.getChild(1))
+
+            # Si la bandera es True recorro el arbol para sumar los terminos
+            if self.isSumador:
+                self.visitExp(ctx.getChild(1)) # Los terminos se encuentran dentro de Exp (expresion)
+                # super().visitExp(ctx) # Los terminos se encuentran dentro de Exp (expresion)
+                self.isSumador = False # Reseteo la bandera
+        """ -------------------------------------- Fin de la Funcion --------------------------------------------- """
+        
+        # Si la bandera es True, estoy en la segunda pasada encargada de comparar las operaciones
+        if self.isComparador:
+            # Guardo el valor del operando1
+            operando1 = self.operando1
+
+            # Si el hijo 0 (Exp) tiene un hijo 1 (E) vacio, entonces no hay operacion de suma/resta
+            cond1 = ctx.getChild(1).getChild(1).getChildCount() == 0
+
+            # Si el hijo 0 (Exp) tiene un hijo 0 (Term) tiene un hijo 1 (T) vacio, entonces es un termino simople
+            cond2 = ctx.getChild(1).getChild(0).getChild(1).getChildCount() == 0
+
+
+            # # Si el hijo 0 (Exp) tiene un hijo 1 (E) vacio, entonces no hay operacion de suma/resta
+            # if ctx.getChild(1).getChild(1).getChildCount() == 0:
+            #     # Si el hijo 0 (Exp) tiene un hijo 0 (Term) tiene un hijo 1 (T) vacio, entonces es un termino simople
+            #     if ctx.getChild(1).getChild(0).getChild(1).getChildCount() == 0:
+            
+            # Entonces si ambas se cumplen:
+            if cond1 and cond2:
+                visitarExpresion(ctx)
+                        
+                # Como Exp es llamada dentro de Comparar, el operando1 obtenido es el operando2
+                self.operando2 = self.operando1
+            
+            # De lo contrario, hay una operacion de suma/resta guardada en un
+            else:
+                self.operando2 = self.temporales.pop(0)
+
+                # Si la pila de temporales esta vacia, debo crear otro para asignar la operacion actual:
+                # if not self.temporales: self.temporales.append(self.generadorDeTemporales.getTemporal())
+
+            
+            # Restauro el valor original del operando1
+            self.operando1 = operando1
+
+            # Guardo el operador de comparacion
+            self.operador = ctx.getChild(0).getText()
+
+            # Escribo en el archivo la operacion de comparacion igualada a un temporal
+            self.file.write(f'{self.temporales[-1]} = {self.operando1} {self.operador} {self.operando2}\n')
+
+            # Si el hijo 2 (Comparar) no es vacio, hay una operacion de comparacion
+            if ctx.getChild(2).getChildCount() != 0:
+                # Genero un nuevo temporal
+                temporal = self.generadorDeTemporales.getTemporal()
+
+                # El ultimo temporal de la lista, sera el primer operando para la siguiente operacion
+                self.operando1 = self.temporales.pop()
+
+                # Agrego el nuevo temporal a la lista
+                self.temporales.append(temporal)
+
+                # Visito el hijo 2 (Comparar)
+                self.visitComparar(ctx.getChild(2))
+        
+        # De lo contrario, estoy en la primera pasada en busca de operaciones de suma/resta
+        else:
+            # Si el hijo 2 (Comparar) no es vacio, entonces hay una operacion de comparacion
+            if ctx.getChild(2).getChildCount() != 0:
+                
+                # # Si el hijo 1 (Exp) tiene un hijo 1 (E) no vacio, entonces hay mas sumas/restas
+                # if ctx.getChild(1).getChild(1).getChildCount() != 0:
+                #     visitarExpresion(ctx)
+
+                visitarExpresion(ctx)
+                
+                # Visito el hijo 2 (Comparar)
+                self.visitComparar(ctx.getChild(2))
+
+
+            # De lo contrario no hay mas operaciones de suma/resta
+            else:
+                # # Si el hijo 1 (Exp) tiene un hijo 1 (E) no vacio, entonces hay mas sumas/restas
+                # if ctx.getChild(1).getChild(1).getChildCount() != 0:
+                #     visitarExpresion(ctx)
+
+                visitarExpresion(ctx)
 
 
     # Visit a parse tree produced by compiladoresParser#exp.
@@ -408,7 +819,7 @@ class MyVisitor (compiladoresVisitor):
         # Si Factor tiene 3 hijos, entonces es una operacion entre parentesis
         elif ctx.getChildCount() == 3:
             # Guardo el valor actual del operando1 ya que sera sobreescrita en la sig. invocacion
-            operador1 = self.operando1
+            operando1 = self.operando1
             
             if self.isSumador:
                 self.isSumador = False
@@ -439,11 +850,9 @@ class MyVisitor (compiladoresVisitor):
                 self.visitOplogicos(ctx.getChild(1))
 
                 # self.isParentesisOperando2 = bool
-
             
             # Recupero el valor del operando1
-            self.operando1 = operador1
-
+            self.operando1 = operando1
             
             # Retorno el ultimo temporal de la lista
             return self.temporales.pop()
