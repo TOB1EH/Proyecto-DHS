@@ -30,9 +30,7 @@ class MyVisitor (compiladoresVisitor):
         self.operando1               = None
         self.operando2               = None
         self.operador                = None
-        self.isComparador            = False
         self.isSumador               = False
-        self.isParentesisOperando2   = False
 
 
     def visitPrograma(self, ctx: compiladoresParser.ProgramaContext):
@@ -67,6 +65,50 @@ class MyVisitor (compiladoresVisitor):
         # Guardo el valor del identificador de la declaracion
         id = ctx.getChild(1).getText()
 
+        # Si existe el hijo 2 (Definicion), entonces hay una asignacion a la variable
+        if ctx.getChild(2).getChildCount() != 0:
+            self.visitDefinicion(ctx.getChild(2))
+
+            # Si hay un temporal, es el ultimo paso de la asignacion, es decir, hubo operaciones dentro de la asignacion
+            if self.temporales:
+                self.file.write(f"{id} = {self.temporales.pop()}\n\n")
+                # self.temporales.clear()
+            
+            # De la contrario la variable solo almacena un factor
+            else:
+                self.file.write(f"{id} = {self.operando1}\n\n")
+            
+            # Reseteo los los elementos para las operaciones
+            self.operando1 = None
+            self.operando2 = None
+            self.operador  = None
+        
+        # De lo contrario solo se declaro la varible vacia
+        else:
+            self.file.write(f'Declaracion de la variable {id}\n')
+        
+        if ctx.getChild(3).getChildCount() != 0:
+            self.visitLista_variables(ctx.getChild(3))
+
+
+    # Visit a parse tree produced by compiladoresParser#definicion.
+    def visitDefinicion(self, ctx:compiladoresParser.DefinicionContext):
+        # Valida que la regla gramatical no este vacia
+        if ctx.getChildCount() == 0:
+            return
+        
+        self.visitOpal(ctx.getChild(1))
+
+
+    # Visit a parse tree produced by compiladoresParser#lista_variables.
+    def visitLista_variables(self, ctx:compiladoresParser.Lista_variablesContext):
+        # Valida que la regla gramatical no este vacia
+        if ctx.getChildCount() == 0:
+            return
+        
+        # Guardo el valor del identificador de la declaracion
+        id = ctx.getChild(1).getText()
+
         # Si existe el hijo 3 (Definicion), entonces hay una asignacion a la variable
         if ctx.getChild(2).getChildCount() != 0:
             self.visitDefinicion(ctx.getChild(2))
@@ -88,25 +130,9 @@ class MyVisitor (compiladoresVisitor):
         # De lo contrario solo se declaro la varible vacia
         else:
             self.file.write(f'Declaracion de la variable {id}\n')
-
-
-    # Visit a parse tree produced by compiladoresParser#definicion.
-    def visitDefinicion(self, ctx:compiladoresParser.DefinicionContext):
-        # Valida que la regla gramatical no este vacia
-        if ctx.getChildCount() == 0:
-            return
         
-        self.visitOpal(ctx.getChild(1))
-
-
-    # # Visit a parse tree produced by compiladoresParser#lista_variables.
-    # def visitLista_variables(self, ctx:compiladoresParser.Lista_variablesContext):
-    #     return self.visitChildren(ctx)
-
-
-    # # Visit a parse tree produced by compiladoresParser#tipo_dato.
-    # def visitTipo_dato(self, ctx:compiladoresParser.Tipo_datoContext):
-    #     return self.visitChildren(ctx)
+        if ctx.getChild(3).getChildCount() != 0:
+            self.visitLista_variables(ctx.getChild(3))
 
 
     # # Visit a parse tree produced by compiladoresParser#asignacion.
@@ -139,19 +165,105 @@ class MyVisitor (compiladoresVisitor):
     def visitOplogicos(self, ctx:compiladoresParser.OplogicosContext):
         self.visitLogico(ctx.getChild(0))
 
-    # # Visit a parse tree produced by compiladoresParser#lor.
-    # def visitLor(self, ctx:compiladoresParser.LorContext):
-    #     return self.visitChildren(ctx)
+        if ctx.getChild(1).getChildCount() != 0:
+            # Si el operando1 es un temporal, es el ultimo paso de la asignacion
+            if self.temporales:
+                self.operando1 = self.temporales.pop()
+            # En caso contrario, operando1 es el primer factor, el valor queda como esta
+            
+            self.visitLor(ctx.getChild(1))
+
+    # Visit a parse tree produced by compiladoresParser#lor.
+    def visitLor(self, ctx:compiladoresParser.LorContext):
+        # Valida que la regla gramatical no este vacia
+        if ctx.getChildCount() == 0:
+            return
+        
+        # Creo una copia del actual operando1
+        operando1 = self.operando1
+
+        # Visito el segundo conjunto de la operacion AND
+        self.visitLogico(ctx.getChild(1))
+        
+        # Si el operando 2 es un temporal, es el ultimo paso de la asignacion
+        if self.temporales:
+            self.operando2 = self.temporales.pop()
+        # En caso contrario, operando2 es un facotr simple guardado en operando1
+        else:
+            self.operando2 = self.operando1
+
+        # Recupero el valor del operando1 de la operacion OR actual
+        self.operando1 = operando1
+
+        # Guardo el operador OR
+        self.operador = ctx.getChild(0).getText()
+
+        # Genero un temporal para la operacion OR
+        self.temporales.append(self.generadorDeTemporales.getTemporal())
+
+        # Escribo en el archivo la operacion OR
+        self.file.write(f'{self.temporales[-1]} = {self.operando1} {self.operador} {self.operando2}\n')
+
+        # Si el hijo 2 (Lor) no es vacio, entonces hay otra operacion OR
+        if ctx.getChild(2).getChildCount() != 0:
+            # El operando1 para la siguiente operacion OR es el temporal generado en esta
+            self.operando1 = self.temporales.pop()
+
+            # Visita la regla Lor para escribir la siguiente operacion
+            self.visitLor(ctx.getChild(2))
 
 
     # Visit a parse tree produced by compiladoresParser#logico.
     def visitLogico(self, ctx:compiladoresParser.LogicoContext):
         self.visitConjunto(ctx.getChild(0))
 
+        if ctx.getChild(1).getChildCount() != 0:
+            # Si el operando 1 es un temporal, es el ultimo paso de la asignacion
+            if self.temporales:
+                self.operando1 = self.temporales.pop()
+            # En caso contrario, operando1 es el primer factor, el valor queda como esta
 
-    # # Visit a parse tree produced by compiladoresParser#land.elf.operando1
-    # def visitLand(self, ctx:compiladoresParser.LandContext):
-    #     return self.visitChildren(ctx)
+            self.visitLand(ctx.getChild(1))
+
+
+    # Visit a parse tree produced by compiladoresParser#land.elf.operando1
+    def visitLand(self, ctx:compiladoresParser.LandContext):
+        # Valida que la regla gramatical no este vacia
+        if ctx.getChildCount() == 0:
+            return
+        
+        # Creo una copia del actual operando1
+        operando1 = self.operando1
+
+        # Visito el segundo conjunto de la operacion AND
+        self.visitConjunto(ctx.getChild(1))
+        
+        # Si el operando 2 es un temporal, es el ultimo paso de la asignacion
+        if self.temporales:
+            self.operando2 = self.temporales.pop()
+        # En caso contrario, operando2 es un facotr simple guardado en operando1
+        else:
+            self.operando2 = self.operando1
+
+        # Recupero el valor del operando1 de la operacion AND actual
+        self.operando1 = operando1
+
+        # Guardo el operador AND
+        self.operador = ctx.getChild(0).getText()
+
+        # Genero un temporal para la operacion AND
+        self.temporales.append(self.generadorDeTemporales.getTemporal())
+
+        # Escribo en el archivo la operacion AND
+        self.file.write(f'{self.temporales[-1]} = {self.operando1} {self.operador} {self.operando2}\n')
+
+        # Si el hijo 2 (Land) no es vacio, entonces hay otra operacion AND
+        if ctx.getChild(2).getChildCount() != 0:
+            # El operando1 para la siguiente operacion AND es el temporal generado en esta
+            self.operando1 = self.temporales.pop()
+
+            # Visita la regla Land para escribir la siguiente operacion
+            self.visitLand(ctx.getChild(2))
 
 
     # Visit a parse tree produced by compiladoresParser#conjunto.
@@ -188,9 +300,6 @@ class MyVisitor (compiladoresVisitor):
             self.visitC(ctx.getChild(0))
 
 
-        
-
-
     # Visit a parse tree produced by compiladoresParser#igualdad.
     def visitIgualdad(self, ctx:compiladoresParser.IgualdadContext):
         # Valida que la regla gramatical no este vacia
@@ -219,8 +328,8 @@ class MyVisitor (compiladoresVisitor):
             self.visitC(ctx.getChild(1))
             
             self.operando2 = self.temporales.pop(0)
-        
-        
+
+        # Guardo el valor del operador de comparacion de igualdad
         self.operador = ctx.getChild(0).getText()
         
         # Reasigno el valor original del operando1
@@ -276,8 +385,7 @@ class MyVisitor (compiladoresVisitor):
 
                 # Si el hijo 0 (Exp) tiene un hijo 0 (Term) tiene un hijo 1 (T) vacio, entonces es un termino simople
                 cond2 = ctx.getChild(0).getChild(0).getChild(1).getChildCount() == 0
-
-                
+          
                 # Entonces si ambas se cumplen:
                 if cond1 and cond2:
                     visitarExpresion(ctx)
@@ -289,7 +397,6 @@ class MyVisitor (compiladoresVisitor):
                 
                 # Visito Comparar en busca de operaciones de comparacion
                 self.visitComparar(ctx.getChild(1))
-
 
         # De lo contrario no hay mas comparaciones
         else:
@@ -335,8 +442,6 @@ class MyVisitor (compiladoresVisitor):
             # Como Exp es llamada dentro de Comparar, el operando1 obtenido es el operando2
             self.operando2 = self.operando1
 
-
-        
         # De lo contrario, hay una operacion de suma/resta guardada en un
         else:
             visitarExpresion(ctx)
@@ -348,8 +453,8 @@ class MyVisitor (compiladoresVisitor):
         # Guardo el operador de comparacion
         self.operador = ctx.getChild(0).getText()
         
+        # Genera el temporal para trabajar con la operacion actual
         self.temporales.append(self.generadorDeTemporales.getTemporal())
-
 
         # Escribo en el archivo la operacion de comparacion igualada a un temporal
         self.file.write(f'{self.temporales[-1]} = {self.operando1} {self.operador} {self.operando2}\n')
@@ -359,7 +464,6 @@ class MyVisitor (compiladoresVisitor):
 
             # El ultimo temporal de la lista, sera el primer operando para la siguiente operacion
             self.operando1 = self.temporales.pop()
-
             
             # Visito el hijo 2 (Comparar)
             self.visitComparar(ctx.getChild(2))
@@ -380,13 +484,6 @@ class MyVisitor (compiladoresVisitor):
                 # De lo contrario el hijo 0 (Term) es un termino compuesto el cual se guardo en la lista de temporales
                 else:
                     self.operando1 = self.temporales.pop(0)
-                
-                # Si el hijo 1 (E) tiene un hijo 1 (Term) que tiene un hijo 0 (Factor) distinto de 3, entonces no hay operaciones entre parentesis
-                if ctx.getChild(1).getChild(1).getChild(0).getChildCount() != 3:
-                
-                # if not self.isParentesisOperando2:
-                    # Genero un temporal para la suma
-                    self.temporales.append(self.generadorDeTemporales.getTemporal())
 
                 # Visita el hijo 1 (E) para obtener operando2 y el operador de suma/resta
                 self.visitE(ctx.getChild(1))
@@ -421,76 +518,37 @@ class MyVisitor (compiladoresVisitor):
             # Guarda el valor actual del operando1 que bien puede ser un termino simple o un temporal
             operando1 = self.operando1
 
-            """ ------------------------------------------------------------------------------ """
-            def obtenerOperando2 (ctx):
-                """ 
-                    Funcion para obtener el valor del operando2 de la operacion actual.
-                """
-                # Si el hijo 1 (Term) tiene un hijo 1 (T) que esta vacio, entonces el term es un termino simple
-                if ctx.getChild(1).getChild(1).getChildCount() == 0:
-                    # Visita Term para obtener el valor del operando1 (termino simple de un factor)
-                    self.visitTerm(ctx.getChild(1))
-                    
-                    # Dentro del hijo (E) trabaja el lado derecho de la suma/resta, por lo tanto el operando1 es en realidad el operando2 de toda la operacion que invoca a (E)
-                    self.operando2 = self.operando1
-    
-                # De lo contrario el hijo 1 (Term) tiene un hijo 1 (T) que no esta vacio, entonces es un termino compuesto (temporal)
-                else:
-                    # Como estoy en E, el operando2 es el valor del temporal que se creo en la primera pasada (resultados de las multiplicaciones/divisiones)
-                    self.operando2 = self.temporales.pop(0)
-                    
-                    # Si la pila de temporales esta vacia, debo crear otro para asignar la operacion actual:
-                    if not self.temporales: self.temporales.append(self.generadorDeTemporales.getTemporal())
-            
-            """ ------------------------------------------------------------------------------- """
-            
-
-            """ Se puede optimizar: """
-            # Si el hijo 1 (Term) tiene un hijo 0 (Factor) que tiene 1 hijo, entonces es un factor simple (un numero o un id)
-            if ctx.getChild(1).getChild(0).getChildCount() == 1:
-                obtenerOperando2(ctx)
-
-            # Si el hijo 1 (Term) tiene un hijo 0 (Factor) que tiene 2 hijos, entonces es un factor valor
-            elif ctx.getChild(1).getChild(0).getChildCount() == 2:
-                obtenerOperando2(ctx)
-
-            # Si el hijo 1 (Term) tiene un hijo 0 (Factor) que tiene 3 hijos, entonces es una operacion entre parentesis
-            elif ctx.getChild(1).getChild(0).getChildCount() == 3:
+            # Si el hijo 1 (Term) tiene un hijo 1 (T) que esta vacio, entonces el term es un termino simple
+            if ctx.getChild(1).getChild(1).getChildCount() == 0:
+                # Visita Term para obtener el valor del operando1 (termino simple de un factor)
+                self.visitTerm(ctx.getChild(1))
                 
-                # Si el hijo 1 (Term) tine un hijo 1 (T) que no es 0, entonces es operacion compuesta (x * y)
-                if ctx.getChild(1).getChild(1).getChildCount() != 0:
-                    # Invoca a la funcion para obtener el operando2 correspondiente
-                    obtenerOperando2(ctx)
-                else:
+                # Dentro del hijo (E) trabaja el lado derecho de la suma/resta, por lo tanto el operando1 es en realidad el operando2 de toda la operacion que invoca a (E)
+                self.operando2 = self.operando1
 
-                    # Invoca a la funcion para obtener el operando2 correspondiente
-                    obtenerOperando2(ctx)
-
-                    # Genera el temporal para trabajar al termino entre parentesis
-                    self.temporales.append(self.generadorDeTemporales.getTemporal())
-
-       
+            # De lo contrario el hijo 1 (Term) tiene un hijo 1 (T) que no esta vacio, entonces es un termino compuesto (temporal)
+            else:
+                # Como estoy en E, el operando2 es el valor del temporal que se creo en la primera pasada (resultados de las multiplicaciones/divisiones)
+                self.operando2 = self.temporales.pop(0)
+                    
             # Guarda el operador de suma/resta de la operacion actual
             self.operador  = ctx.getChild(0).getText()
             
             # Reasigno el valor original del operando1
             self.operando1 = operando1
 
+            # Genera el temporal para trabajar con la operacion actual
+            self.temporales.append(self.generadorDeTemporales.getTemporal())
+
             # Escribe en el archivo de salida la suma/resta de los terminos igualados a un temporal generado
             self.file.write(f'{self.temporales[-1]} = {self.operando1} {self.operador} {self.operando2}\n')
-
             
             # Si el hijo 2 (E) no es vacio, hay mas operaciones de suma/resta
             if ctx.getChild(2).getChildCount() != 0:
-                # Genero un temporal para guardar el resultado de la sigueinte operacion
-                temporal = self.generadorDeTemporales.getTemporal()
                 
                 # Operando1 para la sigueinte operacion sera el temporal generado en la operacion actual
                 self.operando1 = self.temporales.pop()
 
-                # Agrego el temporal generado a la lista de temporales
-                self.temporales.append(temporal)
-                
                 # Visita E para obtener el resultado de la siguiente operacion de suma/resta
                 self.visitE(ctx.getChild(2))
 
@@ -522,11 +580,6 @@ class MyVisitor (compiladoresVisitor):
 
         # Si el hijo 1 no es vacio, entonces hay una operacion de multiplicacion/division
         if ctx.getChild(1).getChildCount() != 0:
-            # Si la bandera no esta activa, genero temporales para las operaciones compuestas (x * y)
-            
-            # Si el operando2 no es una operacion entre parentesis
-            # if ctx.getChild(1).getChild(1).getChildCount() != 3:
-            #     self.temporales.append(self.generadorDeTemporales.getTemporal())
             
             # Visita la regla gramatical T
             self.visitT(ctx.getChild(1))
@@ -537,27 +590,9 @@ class MyVisitor (compiladoresVisitor):
         # Valida que la regla gramatical no este vacia
         if ctx.getChildCount() == 0:
             return
-        
 
-        """ Creo que se puede evitar porque no aporta nada: """
-        # Si el hijo 1 (Factor) tiene 1 hijo, entonces es un factor simple (un numero o un id)
-        if ctx.getChild(1).getChildCount() == 1:
-            # Guardo el segundo operando de la operacion de multiplicacion/division
-            self.operando2 = self.visitFactor(ctx.getChild(1))
-        
-        # Si el hijo 1 (Factor) tiene 2 hijos, entonces es un factor valor
-        elif ctx.getChild(1).getChildCount() == 2:
-            return
-        
-        # Si el hijo 1 (Factor) tiene 3 hijos, hay un termino entre parentesis
-        elif ctx.getChild(1).getChildCount() == 3:
-            
-            # Guardo el ultimo temporal generado en operando2 que es el temporal de la operacion entre parentesis
-            self.operando2 = self.visitFactor(ctx.getChild(1))
-   
-        # Si las condiciones anteriores no se cumplen, hay un Error (No deberia pasar)
-        else:
-            print("Error")
+        # Guardo el segundo operando de la operacion de multiplicacion/division
+        self.operando2 = self.visitFactor(ctx.getChild(1))
 
         # Guardo el operador de la operacion de multiplicacion/division
         self.operador   = ctx.getChild(0).getText()
@@ -570,14 +605,8 @@ class MyVisitor (compiladoresVisitor):
 
         # Si el hijo 2 (T) no es vacio, hay una operacion de multiplicacion/division
         if ctx.getChild(2).getChildCount() != 0:
-            # Genero un nuevo temporal
-            temporal = self.generadorDeTemporales.getTemporal()
-
             # El ultimo temporal de la lista, sera el primer operando para la siguiente operacion
             self.operando1 = self.temporales.pop()
-            
-            # Agrego el nuevo temporal a la lista
-            self.temporales.append(temporal)
             
             # Visito el hijo 2 (T)
             self.visitT(ctx.getChild(2))
@@ -595,13 +624,19 @@ class MyVisitor (compiladoresVisitor):
         # Si Factor tiene 2 hijos, entonces es un factor negado
         elif ctx.getChildCount() == 2:
             
+            # Obtengo el valor del factor negado
             valor = self.visitFactor(ctx.getChild(1))
 
+            # Guardo el operador de negacion
             operador_negacion = ctx.getChild(0).getText()
 
+            # Genero un temporal para la operacion de negacion
             self.temporales.append(self.generadorDeTemporales.getTemporal())
+            
+            # Escribo en el archivo la operacion
             self.file.write(f'{self.temporales[-1]} = {operador_negacion}{valor}\n')
 
+            # Devuelvo el temporal creado
             return self.temporales.pop()
        
         # Si Factor tiene 3 hijos, entonces es una operacion entre parentesis
@@ -620,8 +655,6 @@ class MyVisitor (compiladoresVisitor):
             else:
                 # Visito la regla gramatical Oplogicos
                 self.visitOplogicos(ctx.getChild(1))
-
-                # self.isParentesisOperando2 = bool
             
             # Recupero el valor del operando1
             self.operando1 = operando1
