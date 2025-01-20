@@ -32,6 +32,11 @@ class MyVisitor (compiladoresVisitor):
         self.operador                = None
         self.isSumador               = False
 
+        # Constantes Codigo Intermedio de Tres Direcciones
+        self.etiqueta   = 'label'
+        self.b          = 'jmp'
+        self.bneq       = 'ifnjmp'
+
 
     def visitPrograma(self, ctx: compiladoresParser.ProgramaContext):
         print("-" + "=" * 30 + "-")
@@ -662,9 +667,45 @@ class MyVisitor (compiladoresVisitor):
             # Retorno el ultimo temporal de la lista
             return self.temporales.pop()
 
-    # # Visit a parse tree produced by compiladoresParser#iwhile.
-    # def visitIwhile(self, ctx:compiladoresParser.IwhileContext):
-    #     return self.visitChildren(ctx)
+    # Visit a parse tree produced by compiladoresParser#iwhile.
+    def visitIwhile(self, ctx:compiladoresParser.IwhileContext):
+        
+        # Genero la etiqueta para el salto condicional del bucle While
+        self.etiquetas.append(self.generadorDeEtiquetas.getEtiqueta())
+        
+        # Escribo en el archivo la etiqueta para iniciar el bucle while
+        self.file.write(f'{self.etiqueta} {self.etiquetas[-1]}\n')
+        
+        
+        # if ctx.getChild(2).getChildCount() != 0:
+        
+        # Visito la Regla Cond, en busca de la condicion del bucle While
+        self.visitCond(ctx.getChild(2))
+        
+        if self.temporales:
+            # Genero la etiqueta para finalizar el bucle while
+            self.etiquetas.append(self.generadorDeEtiquetas.getEtiqueta())
+
+            # Escribo en el archivo el salto condicional del bucle While
+            self.file.write(f'{self.bneq} {self.temporales.pop()}, {self.etiquetas[-1]}\n')
+
+            # Visito la Regla Instruccion, para escribir en el archivo la instruccion del bucle While
+            self.visitInstruccion(ctx.getChild(4))
+
+            # Escribo en el archivo el salto al final del bucle While
+            self.file.write(f'{self.b} {self.etiquetas.pop(0)}\n')
+
+            # Escribo en el archivo la etiqueta para salir del bucle while
+            self.file.write(f'{self.etiqueta} {self.etiquetas.pop(0)}\n')
+        
+        
+        # """ Revisar para bucles infinitos """
+        else:
+            # Visito la Regla Instruccion, para escribir en el archivo la instruccion del bucle While
+            self.visitInstruccion(ctx.getChild(4))
+
+            # Escribo en el archivo el salto al final del bucle While
+            self.file.write(f'{self.b} {self.etiquetas.pop(0)}\n')
 
 
     # # Visit a parse tree produced by compiladoresParser#ifor.

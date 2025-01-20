@@ -3,10 +3,37 @@
 
 void main () {
 
-    int a = 0, b = 2;
+    // int a = 0, b = 2;
 
-    int t = a || b;   
-    int y = a && b;
+    // int t = a || b;   
+    // int y = a && b;
+
+    // int y = 0;
+    // int x = 1;
+    // int w = 2;
+
+    // while (y != 3 * 2 + (5 * 1) / 2 && x != 0 && w != 0) {
+    //     x = x + 1;
+    //     w = w + 1;
+
+	//     y = w * x;
+    // }
+
+    /* Esto se puede traducir como: */
+    // label l0
+    // t0 = y < 100
+    // ifnjmp t0, l1
+    // t1 = w * x
+    // y = t1
+    // jmp l0
+    // label l1
+
+    int w = 2;
+
+    while (1 + 2) {
+        w = w + 1;
+    }
+
 
     /* 
     a = 0

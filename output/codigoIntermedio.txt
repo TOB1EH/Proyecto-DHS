@@ -1,10 +1,10 @@
-a = 0
+w = 2
 
-b = 2
+label l0
+t0 = 1 + 2
+ifnjmp t0, l1
+t1 = w + 1
+w = t1
 
-t0 = a || b
-t = t0
-
-t1 = a && b
-y = t1
-
+jmp l0
+label l1
