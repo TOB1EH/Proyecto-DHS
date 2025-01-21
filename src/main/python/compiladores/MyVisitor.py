@@ -676,41 +676,72 @@ class MyVisitor (compiladoresVisitor):
         # Escribo en el archivo la etiqueta para iniciar el bucle while
         self.file.write(f'{self.etiqueta} {self.etiquetas[-1]}\n')
         
-        
-        # if ctx.getChild(2).getChildCount() != 0:
-        
         # Visito la Regla Cond, en busca de la condicion del bucle While
         self.visitCond(ctx.getChild(2))
         
-        if self.temporales:
-            # Genero la etiqueta para finalizar el bucle while
+        # Genero la etiqueta para finalizar el bucle while
+        self.etiquetas.append(self.generadorDeEtiquetas.getEtiqueta())
+        
+        # Escribo en el archivo el salto condicional del bucle While
+        self.file.write(f'{self.bneq} {self.temporales.pop()}, {self.etiquetas[-1]}\n')
+        
+        # Visito la Regla Instruccion, para escribir en el archivo la instruccion del bucle While
+        self.visitInstruccion(ctx.getChild(4))
+        
+        # Escribo en el archivo el salto al comienzo del bucle While
+        self.file.write(f'{self.b} {self.etiquetas.pop(0)}\n')
+        
+        # Escribo en el archivo la etiqueta para salir del bucle while
+        self.file.write(f'{self.etiqueta} {self.etiquetas.pop(0)}\n')
+        
+
+    # Visit a parse tree produced by compiladoresParser#ifor.
+    def visitIfor(self, ctx:compiladoresParser.IforContext):
+        # Caso para bucle for infinito
+        if ctx.getChild(2).getChildCount() == 0 and ctx.getChild(4).getChildCount() == 0 and ctx.getChild(6).getChildCount() == 0:
+            # Genero la etiqueta para el salto condicional del bucle for
             self.etiquetas.append(self.generadorDeEtiquetas.getEtiqueta())
 
-            # Escribo en el archivo el salto condicional del bucle While
+            # Escribo en el archivo la etiqueta para iniciar el bucle for
+            self.file.write(f'{self.etiqueta} {self.etiquetas[-1]}\n')
+
+            # Visito la Regla Instruccion, para escribir en el archivo la instruccion del bucle While
+            self.visitInstruccion(ctx.getChild(8))
+
+            # Escribo en el archivo el salto al comienzo del bucle for
+            self.file.write(f'{self.b} {self.etiquetas.pop(0)}\n')
+        
+        # Caso para bucle for con condicion
+        else:
+            # Visita la Regla Init para obtener la asignacion inicial del bucle for
+            self.visitInit(ctx.getChild(2))
+
+            # Genero la etiqueta para el salto condicional del bucle for
+            self.etiquetas.append(self.generadorDeEtiquetas.getEtiqueta())
+
+            # Escribo en el archivo la etiqueta para iniciar el bucle for
+            self.file.write(f'{self.etiqueta} {self.etiquetas[-1]}\n')
+
+            # Visito la Regla Cond, en busca de la condicion del bucle for
+            self.visitCond(ctx.getChild(4))
+
+            # Genero la etiqueta para finalizar el bucle for
+            self.etiquetas.append(self.generadorDeEtiquetas.getEtiqueta())
+
+            # Escribo en el archivo el salto condicional del bucle for
             self.file.write(f'{self.bneq} {self.temporales.pop()}, {self.etiquetas[-1]}\n')
 
             # Visito la Regla Instruccion, para escribir en el archivo la instruccion del bucle While
-            self.visitInstruccion(ctx.getChild(4))
+            self.visitInstruccion(ctx.getChild(8))
 
-            # Escribo en el archivo el salto al final del bucle While
+            # Visita la Regla Iter, para obtener la accion post-ejecucion del bucle for (iterador)
+            self.visitIter(ctx.getChild(6))
+
+            # Escribo en el archivo el salto al comienzo del bucle for
             self.file.write(f'{self.b} {self.etiquetas.pop(0)}\n')
 
             # Escribo en el archivo la etiqueta para salir del bucle while
             self.file.write(f'{self.etiqueta} {self.etiquetas.pop(0)}\n')
-        
-        
-        # """ Revisar para bucles infinitos """
-        else:
-            # Visito la Regla Instruccion, para escribir en el archivo la instruccion del bucle While
-            self.visitInstruccion(ctx.getChild(4))
-
-            # Escribo en el archivo el salto al final del bucle While
-            self.file.write(f'{self.b} {self.etiquetas.pop(0)}\n')
-
-
-    # # Visit a parse tree produced by compiladoresParser#ifor.
-    # def visitIfor(self, ctx:compiladoresParser.IforContext):
-    #     return self.visitChildren(ctx)
 
 
     # # Visit a parse tree produced by compiladoresParser#iif.
@@ -733,9 +764,44 @@ class MyVisitor (compiladoresVisitor):
     #     return self.visitChildren(ctx)
 
 
-    # # Visit a parse tree produced by compiladoresParser#iter.
-    # def visitIter(self, ctx:compiladoresParser.IterContext):
-    #     return self.visitChildren(ctx)
+    # Visit a parse tree produced by compiladoresParser#iter.
+    def visitIter(self, ctx:compiladoresParser.IterContext):
+        # Si el iter tiene 1 hijo, es una asignacion
+        if ctx.getChildCount() == 1:
+            self.visitAsignacion(ctx.getChild(0))
+        
+        # Si Iter tiene 2 hijos, es un iterador
+        elif ctx.getChildCount() == 2:
+            # Genero un temporal para la operacion del iterador
+            self.temporales.append(self.generadorDeTemporales.getTemporal())
+
+            # Casos para pre-incrementos/decrementos
+            if ctx.getChild(0).getText() == '++' or ctx.getChild(0).getText() == '--':
+                # Guardo la variable
+                id = ctx.getChild(1).getText()
+
+                # Guardo el operador de ibcremento/decremento
+                inc_dec = ctx.getChild(0).getText()
+
+            # Casos para post-incrementos/decrementos
+            else:
+                # Guardo la variable
+                id = ctx.getChild(0).getText()
+
+                # Guardo el operador de incremento/decremento
+                inc_dec = ctx.getChild(1).getText()
+
+            # Evaluo si se trata de un incremento o de un decremento
+            if inc_dec == '++':
+                self.operador = '+'
+            else:
+                self.operador = '-'
+            
+            # Escribo en el archivo la operacion de incremento/decremento dentro de un temporal
+            self.file.write(f'{self.temporales[-1]} = {id} {self.operador} 1\n')
+
+            # Escribo en el archivo, la asignacion del temporal a la variable
+            self.file.write(f'{id} =  {self.temporales.pop()}\n')
 
 
     # # Visit a parse tree produced by compiladoresParser#retornar.

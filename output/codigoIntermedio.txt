@@ -1,10 +1,12 @@
-w = 2
+x = 10
 
+y = 5
+
+z = 1
+
+Declaracion de la variable i
 label l0
-t0 = 1 + 2
-ifnjmp t0, l1
-t1 = w + 1
-w = t1
+t0 = z * x
+y = t0
 
 jmp l0
-label l1

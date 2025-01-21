@@ -181,7 +181,7 @@ factor : LNOT factor
 iwhile : WHILE PA cond PC instruccion ;
 
 // Bucle for
-ifor : FOR PA init PYC cond PYC iter PC instruccion ;
+ifor : FOR PA init PYC cond_for PYC iter PC instruccion ;
 
 // Condicional if
 iif : IF PA cond PC instruccion ;
@@ -190,17 +190,25 @@ iif : IF PA cond PC instruccion ;
 ielse : iif ELSE instruccion ;
 
 // Inicializacion
-init : asignacion ;
+init : asignacion
+     |
+     ; 
 
-// Condicion del for y while
+// Condicion del bucle while y el condicional if
 cond : oplogicos ;
 
+// Condicion para el bucle for
+cond_for : oplogicos 
+         |
+         ;
+
 // Expresion de actualizacion o iterador
-iter : ID INC // REVISAR
+iter : ID INC
      | ID DEC
      | INC ID 
      | DEC ID
      | asignacion
+     |
      ;
 
 retornar : RETURN oplogicos ;

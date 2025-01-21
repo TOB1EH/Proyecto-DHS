@@ -1,4 +1,4 @@
-# Generated from /home/tobias/Documentos/workSpace/Proyectos-DHS/proyecto-dhs/src/main/python/proyecto-dhs/compiladores.g4 by ANTLR 4.13.1
+# Generated from /home/tobias/Documents/workspace/Proyectos-DHS/proyecto-dhs/src/main/python/compiladores/compiladores.g4 by ANTLR 4.13.1
 from antlr4 import *
 if "." in __name__:
     from .compiladoresParser import compiladoresParser
@@ -266,6 +266,15 @@ class compiladoresListener(ParseTreeListener):
 
     # Exit a parse tree produced by compiladoresParser#cond.
     def exitCond(self, ctx:compiladoresParser.CondContext):
+        pass
+
+
+    # Enter a parse tree produced by compiladoresParser#cond_for.
+    def enterCond_for(self, ctx:compiladoresParser.Cond_forContext):
+        pass
+
+    # Exit a parse tree produced by compiladoresParser#cond_for.
+    def exitCond_for(self, ctx:compiladoresParser.Cond_forContext):
         pass
 
 

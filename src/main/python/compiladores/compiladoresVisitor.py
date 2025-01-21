@@ -1,4 +1,4 @@
-# Generated from /home/tobias/Documentos/workSpace/Proyectos-DHS/proyecto-dhs/src/main/python/proyecto-dhs/compiladores.g4 by ANTLR 4.13.1
+# Generated from /home/tobias/Documents/workspace/Proyectos-DHS/proyecto-dhs/src/main/python/compiladores/compiladores.g4 by ANTLR 4.13.1
 from antlr4 import *
 if "." in __name__:
     from .compiladoresParser import compiladoresParser
@@ -151,6 +151,11 @@ class compiladoresVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by compiladoresParser#cond.
     def visitCond(self, ctx:compiladoresParser.CondContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by compiladoresParser#cond_for.
+    def visitCond_for(self, ctx:compiladoresParser.Cond_forContext):
         return self.visitChildren(ctx)
 
 
