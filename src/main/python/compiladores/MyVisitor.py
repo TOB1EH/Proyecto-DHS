@@ -744,14 +744,59 @@ class MyVisitor (compiladoresVisitor):
             self.file.write(f'{self.etiqueta} {self.etiquetas.pop(0)}\n')
 
 
-    # # Visit a parse tree produced by compiladoresParser#iif.
-    # def visitIif(self, ctx:compiladoresParser.IifContext):
-    #     return self.visitChildren(ctx)
+    # Visit a parse tree produced by compiladoresParser#iif.
+    def visitIif(self, ctx:compiladoresParser.IifContext):
+        
+        # Visito la Regla Cond, en busca de la condicion del if
+        self.visitCond(ctx.getChild(2))         
+        
+        # Si el if fue invocado por un else
+        if isinstance(ctx.parentCtx, compiladoresParser.IelseContext):
+
+            # Escribo en el archivo el salto condicional del if
+            self.file.write(f'{self.bneq} {self.temporales.pop()}, {self.etiquetas[-1]}\n')
+            
+            # Visito la Regla Instruccion, para escribir en el archivo la instruccion del if
+            self.visitInstruccion(ctx.getChild(4))
+
+            # Genero la etiqueta para salir del if
+            self.etiquetas.append(self.generadorDeEtiquetas.getEtiqueta())    
+
+            # Escribo en el archivo el salto para salir del if
+            self.file.write(f'{self.b} {self.etiquetas[-1]}\n')
+
+        # De lo contrario, es un condicional if solo
+        else:
+            # Genero la etiqueta para salir del if
+            self.etiquetas.append(self.generadorDeEtiquetas.getEtiqueta())
+            
+            # Escribo en el archivo el salto condicional del if
+            self.file.write(f'{self.bneq} {self.temporales.pop()}, {self.etiquetas[-1]}\n')
+
+            # Visito la Regla Instruccion, para escribir en el archivo la instruccion del if
+            self.visitInstruccion(ctx.getChild(4))
+
+            # Escribo en el archivo la etiqueta para salir del else
+            self.file.write(f'{self.etiqueta} {self.etiquetas.pop()}\n')
 
 
-    # # Visit a parse tree produced by compiladoresParser#ielse.
-    # def visitIelse(self, ctx:compiladoresParser.IelseContext):
-    #     return self.visitChildren(ctx)
+    # Visit a parse tree produced by compiladoresParser#ielse.
+    def visitIelse(self, ctx:compiladoresParser.IelseContext):
+        # Genero la etiqueta para el salto condicional del if
+        self.etiquetas.append(self.generadorDeEtiquetas.getEtiqueta())
+        
+        # Visito el if por que de lo contrario no puede existir el else
+        self.visitIif(ctx.getChild(0))
+
+        # Escribo en el archivo el salto condicional del if
+        self.file.write(f'{self.etiqueta} {self.etiquetas.pop(0)}\n')
+
+        # Visito la Regla Instruccion, para escribir en el archivo la instruccion del else
+        self.visitInstruccion(ctx.getChild(2))
+
+        # Escribo en el archivo la etiqueta para salir del else
+        self.file.write(f'{self.etiqueta} {self.etiquetas.pop()}\n')
+        
 
 
     # # Visit a parse tree produced by compiladoresParser#init.
