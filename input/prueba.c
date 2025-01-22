@@ -1,11 +1,73 @@
 // Comentario que deberia ser ignorado
 // #include<stdio.h>
 
+int f (int a, int b);
+
 void main () {
 
+    int x = 0;
+    int o = 10;
+    int p = 5;
+    
+    /* Invoacaion de funciones */
+    x = f(o, p);
+
+}
+
+/* FUNCIONES */
+int f (int a, int b) {
+    return a + b;
+}
+    
+    /* 
+
+    ...
+    	x = f(o, p);
+    ...
+    
+    // Esto se puede traducir como:
+    // Funcion:
+    label l0
+    // Sacamos de la pila los argumentos que vinen mas la direccion de retorno
+    pop t0     // Direccion a donde retornar
+    pop b
+    pop a
+    t1 = a + b
+    push t1
+    jmp t0
+    ...
+    // Llamada a la funcion:
+    // le pasa a la Pila los argumentos y el lugar de retorno
+    push o
+    push p
+    
+    push l1     // Etiqueta para volver al lugar correcto (lugar de retorno)
+    jmp l0      // Saltamos a la funcion (invocamos)
+    label l1    // Retorna a este punto desde la funcion
+    
+    pop x       // Este x es el t1  que calculamos dentro de la funcion, por eso debemos obtenerlo de la pila
+    ...
+    
+    
+     */
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     // Aciones que siempre se ejcutan al menos una vez en el for: 'i = 0; i < x;':
 
-    int x = 10;
+/*     int x = 10;
     int y = 5;
     int z = 1;
     // int i;
@@ -14,7 +76,7 @@ void main () {
     if (x > 0)
 	    y = z * 2;
     else
-	    y = z / 2;
+	    y = z / 2; */
 	
     /* Esto se traduce como */
 /* 
@@ -303,7 +365,7 @@ void main () {
 
     printf("%d\n", a);
     printf("%d\n", c); */
-}
+// }
 
 
 

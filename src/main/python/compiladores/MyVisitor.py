@@ -31,6 +31,7 @@ class MyVisitor (compiladoresVisitor):
         self.operando2               = None
         self.operador                = None
         self.isSumador               = False
+        self.isFuncion               = False
 
         # Constantes Codigo Intermedio de Tres Direcciones
         self.etiqueta   = 'label'
@@ -164,6 +165,8 @@ class MyVisitor (compiladoresVisitor):
     # Visit a parse tree produced by compiladoresParser#opal.
     def visitOpal(self, ctx:compiladoresParser.OpalContext):
         self.visitOplogicos(ctx.getChild(0))
+
+
         
 
     # Visit a parse tree produced by compiladoresParser#oplogicos.
@@ -177,6 +180,13 @@ class MyVisitor (compiladoresVisitor):
             # En caso contrario, operando1 es el primer factor, el valor queda como esta
             
             self.visitLor(ctx.getChild(1))
+
+        # Evalua si es una llamada a funcion
+        if self.isFuncion:
+            if self.temporales:
+                self.file.write(f"push {self.temporales.pop()}\n")
+            else:
+                self.file.write(f"push {self.operando1}\n")
 
     # Visit a parse tree produced by compiladoresParser#lor.
     def visitLor(self, ctx:compiladoresParser.LorContext):
@@ -854,14 +864,37 @@ class MyVisitor (compiladoresVisitor):
     #     return self.visitChildren(ctx)
 
 
-    # # Visit a parse tree produced by compiladoresParser#prototipo_funcion.
-    # def visitPrototipo_funcion(self, ctx:compiladoresParser.Prototipo_funcionContext):
-    #     return self.visitChildren(ctx)
+    # Visit a parse tree produced by compiladoresParser#prototipo_funcion.
+    def visitPrototipo_funcion(self, ctx:compiladoresParser.Prototipo_funcionContext):
+        # Genero la etiqueta de salto hacia la funcion
+        self.etiquetas.append(self.generadorDeEtiquetas.getEtiqueta())
 
 
-    # # Visit a parse tree produced by compiladoresParser#funcion.
-    # def visitFuncion(self, ctx:compiladoresParser.FuncionContext):
-    #     return self.visitChildren(ctx)
+    # Visit a parse tree produced by compiladoresParser#funcion.
+    def visitFuncion(self, ctx:compiladoresParser.FuncionContext):
+        if ctx.getChild(1).getText() != 'main':
+        
+            self.file.write(f'-------- FUNCION --------\n')
+
+            # Escribo en el archivo la etiqueta de salto hacia la funcion
+            self.file.write(f'{self.etiqueta} {self.etiquetas.pop(0)}\n')
+
+            self.file.write(f'pop {self.etiquetas[-1]}\n')
+    
+            """ Evaluar cuando no tiene argumentos """
+    
+            # Visito la Regla Argunementos para obtener los argumentos de la funcion
+            self.visitArgumentos(ctx.getChild(3))
+    
+            self.visitBloque(ctx.getChild(5))
+
+            self.file.write(f'push {self.temporales.pop()}\n')
+    
+            self.file.write(f'{self.b} {self.etiquetas.pop()}\n')
+        
+        else:
+            self.visitBloque(ctx.getChild(5))
+
 
 
     # # Visit a parse tree produced by compiladoresParser#valor_retorno.
@@ -869,31 +902,82 @@ class MyVisitor (compiladoresVisitor):
     #     return self.visitChildren(ctx)
 
 
-    # # Visit a parse tree produced by compiladoresParser#argumentos.
-    # def visitArgumentos(self, ctx:compiladoresParser.ArgumentosContext):
-    #     return self.visitChildren(ctx)
+    # Visit a parse tree produced by compiladoresParser#argumentos.
+    def visitArgumentos(self, ctx:compiladoresParser.ArgumentosContext):
+        # Valida que la regla gramatical no este vacia
+        if ctx.getChildCount() == 0:
+            return
+        
+        self.file.write(f'pop {ctx.getChild(1).getText()}\n')
+
+        if ctx.getChild(2).getChildCount() != 0:
+            self.visitLista_argumentos(ctx.getChild(2))
 
 
-    # # Visit a parse tree produced by compiladoresParser#lista_argumentos.
-    # def visitLista_argumentos(self, ctx:compiladoresParser.Lista_argumentosContext):
-    #     return self.visitChildren(ctx)
+    # Visit a parse tree produced by compiladoresParser#lista_argumentos.
+    def visitLista_argumentos(self, ctx:compiladoresParser.Lista_argumentosContext):
+        # Valida que la regla gramatical no este vacia
+        if ctx.getChildCount() == 0:
+            return
+        
+        self.file.write(f'pop {ctx.getChild(2).getText()}\n')
+
+        if ctx.getChild(3).getChildCount() != 0:
+            self.visitLista_argumentos(ctx.getChild(3))
 
 
-    # # Visit a parse tree produced by compiladoresParser#llamada_funcion_valor.
-    # def visitLlamada_funcion_valor(self, ctx:compiladoresParser.Llamada_funcion_valorContext):
-    #     return self.visitChildren(ctx)
+
+    # Visit a parse tree produced by compiladoresParser#llamada_funcion_valor.
+    def visitLlamada_funcion_valor(self, ctx:compiladoresParser.Llamada_funcion_valorContext):
+
+        self.visitLlamada_funcion(ctx.getChild(2))
+
+        self.file.write(f'pop {ctx.getChild(0).getText()}\n')
 
 
-    # # Visit a parse tree produced by compiladoresParser#llamada_funcion.
-    # def visitLlamada_funcion(self, ctx:compiladoresParser.Llamada_funcionContext):
-    #     return self.visitChildren(ctx)
 
 
-    # # Visit a parse tree produced by compiladoresParser#argumentos_a_funcion.
-    # def visitArgumentos_a_funcion(self, ctx:compiladoresParser.Argumentos_a_funcionContext):
-    #     return self.visitChildren(ctx)
+    # Visit a parse tree produced by compiladoresParser#llamada_funcion.
+    def visitLlamada_funcion(self, ctx:compiladoresParser.Llamada_funcionContext):
+        self.file.write(f'-------- LLAMADA A FUNCION --------\n')
+
+        self.visitArgumentos_a_funcion(ctx.getChild(2))
+
+        self.etiquetas.append(self.generadorDeEtiquetas.getEtiqueta())
+
+        self.file.write(f'push {self.etiquetas[-1]}\n')
+        
+        self.file.write(f'{self.b} {self.etiquetas[-2]}\n')
+
+        self.file.write(f'{self.etiqueta} {self.etiquetas[-1]}\n')
 
 
-    # # Visit a parse tree produced by compiladoresParser#lista_argumentos_a_funcion.
-    # def visitLista_argumentos_a_funcion(self, ctx:compiladoresParser.Lista_argumentos_a_funcionContext):
-    #     return self.visitChildren(ctx)
+
+
+
+    # Visit a parse tree produced by compiladoresParser#argumentos_a_funcion.
+    def visitArgumentos_a_funcion(self, ctx:compiladoresParser.Argumentos_a_funcionContext):
+        # Valida que la regla gramatical no este vacia
+        if ctx.getChildCount() == 0:
+            return
+        
+        self.isFuncion = True
+
+        self.visitOplogicos(ctx.getChild(0))
+
+        if ctx.getChild(1).getChildCount() != 0:
+            self.visitLista_argumentos_a_funcion(ctx.getChild(1))
+
+        self.isFuncion = False
+
+
+    # Visit a parse tree produced by compiladoresParser#lista_argumentos_a_funcion.
+    def visitLista_argumentos_a_funcion(self, ctx:compiladoresParser.Lista_argumentos_a_funcionContext):
+        # Valida que la regla gramatical no este vacia
+        if ctx.getChildCount() == 0:
+            return
+        
+        self.visitOplogicos(ctx.getChild(1))
+
+        if ctx.getChild(2).getChildCount() != 0:
+            self.visitLista_argumentos_a_funcion(ctx.getChild(2))

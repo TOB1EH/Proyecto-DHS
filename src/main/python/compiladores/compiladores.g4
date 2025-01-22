@@ -215,7 +215,7 @@ retornar : RETURN oplogicos ;
 
 prototipo_funcion : valor_retorno ID PA argumentos PC ;
 
-funcion : valor_retorno ID PA argumentos PC bloque ; // Evaluar posibles problemas
+funcion : valor_retorno ID PA argumentos PC bloque ;
 
 valor_retorno : tipo_dato
               | VOID
