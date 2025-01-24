@@ -1,8 +1,12 @@
-x = 0
+w = 0
+
+x = w
+
+e = x
 
 o = 10
 
-p = 5
+p = 20
 
 -------- LLAMADA A FUNCION --------
 push o
@@ -11,11 +15,13 @@ push l1
 jmp l0
 label l1
 pop x
--------- FUNCIOn --------
-label l0 
+a = 9
+
+-------- FUNCION --------
+label l0
 pop l1
 pop a
-pop b
-t0 = a + b
+pop c
+t0 = a + c
 push t0
 jmp l1

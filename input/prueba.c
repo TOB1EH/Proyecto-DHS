@@ -5,20 +5,44 @@ int f (int a, int b);
 
 void main () {
 
-    int x = 0;
-    int o = 10;
-    int p = 5;
+    char w = 0;
+
+    double x = w;
+
+    int e = x;
+
+
+    // e = x;
+
+    int o  = 10;
+    int p  = 20;
     
     /* Invoacaion de funciones */
     x = f(o, p);
 
+    // printf("%f", x);
+}
+int a = 9;
+/* FUNCIONES */
+int  f (int a, int c) {
+    // int a = 0;
+    // int c = 0;
+    return a + c;
+}
+/* 
+int funcion (int a){
+    int a; <----- ERROR
+    return;
 }
 
-/* FUNCIONES */
-int f (int a, int b) {
-    return a + b;
-}
-    
+float a = 0;
+int b = a; <------ ADVERTENCIA
+
+(Usar ENUM para castear el tipo por orden de jerarquia)
+
+si hya errores el visitor no funca
+
+   */  
     /* 
 
     ...

@@ -2,10 +2,34 @@ from enum import Enum
 from abc import ABC
 
 class TipoDato(Enum):
-    INT     = 1
-    FLOAT   = 2
-    CHAR    = 3
-    DOUBLE  = 4
+    char    = 1
+    int     = 2
+    float   = 3
+    double  = 4
+
+    def getTipoDato (self):
+        return self.name
+    
+    # Implementamos los métodos de comparación basados en self.value
+    def __lt__(self, other):
+        if isinstance(other, TipoDato):
+            return self.value < other.value
+        return NotImplemented
+
+    def __le__(self, other):
+        if isinstance(other, TipoDato):
+            return self.value <= other.value
+        return NotImplemented
+
+    def __gt__(self, other):
+        if isinstance(other, TipoDato):
+            return self.value > other.value
+        return NotImplemented
+
+    def __ge__(self, other):
+        if isinstance(other, TipoDato):
+            return self.value >= other.value
+        return NotImplemented
 
 class ID(ABC):
     def __init__(self, nombre: str, tipo_dato: TipoDato):

@@ -3,6 +3,7 @@ from .compiladoresParser import compiladoresParser
 from .Componentes.TablaSimbolos import TablaSimbolos
 from .Componentes.Variable import Variable
 from .Componentes.Funcion import Funcion
+from .Componentes.ID import TipoDato
 
 class MyListener (compiladoresListener):
     """
@@ -51,7 +52,7 @@ class MyListener (compiladoresListener):
         padre = ctx.parentCtx
         # Verifica si padre es una instancia de la clase especifica proporcionada
         if isinstance(padre, compiladoresParser.FuncionContext): # Si el padre es una función
-            return f"Función {padre.getChild(1).getText()}"
+            return f"{padre.getChild(1).getText()}"
         elif isinstance(padre, compiladoresParser.InstruccionContext): # Si el padre es una instrucción
             if isinstance(padre.parentCtx, compiladoresParser.IwhileContext): # Si el padre es 'while'
                 return "While"
@@ -76,10 +77,37 @@ class MyListener (compiladoresListener):
         # Recorremos el contexto actual en busca de ID no inicializados y/o usados
         for variable in contextos[-1].obtenerIdentificadores().values(): 
             if variable.getInicializado() is False: # Si no esta incializado
-                self.reporteAdvertencias(ctx, f"Identificador '{variable.obtenerNombre()}' no inicialzada")
+                self.advertencias.append(f"Advertencia: Identificador '{variable.obtenerNombre()}' no inicialzado en bloque {contextos[-1].nombre}")
+                # self.reporteAdvertencias(ctx, f"Identificador '{variable.obtenerNombre()}' no inicialzada")
             if variable.getUsado() is False: # Si no esta usado:
-                self.reporteAdvertencias(ctx, f"Identificador '{variable.obtenerNombre()}' no usada")
-            
+                self.advertencias.append(f"Advertencia: Identificador '{variable.obtenerNombre()}' no usado en bloque {contextos[-1].nombre}")
+                # self.reporteAdvertencias(ctx, f"Identificador '{variable.obtenerNombre()}' no usada")
+    def asignarTiposDeDatos (self, tipo_dato):
+        """
+        Funcion para asignar tipos de datos a las variables declaradas. 
+        """
+
+        if tipo_dato == "char":
+            tipo_dato = TipoDato.char
+        elif tipo_dato == "int":
+            tipo_dato = TipoDato.int
+        elif tipo_dato == "float":
+            tipo_dato = TipoDato.float
+        elif tipo_dato == "double":
+            tipo_dato = TipoDato.double
+    
+        return tipo_dato
+
+    def compararTiposDeDatos (self, ctx, tipo1 : TipoDato, tipo2 : TipoDato):
+        """
+        Funcion para comparar tipos de datos de dos variables. Y mostrar posibles perdidas de informacion si se asigna una variable
+        de mayor orden de jerarquia a una de menor orden.
+        """
+        
+        if tipo1 < tipo2:
+            self.reporteAdvertencias(ctx, f"Sintactico: conversión de '{tipo2.getTipoDato()}' a '{tipo1.getTipoDato()}', posible pérdida de datos.")
+
+        return
 
     def enterPrograma(self, ctx:compiladoresParser.ProgramaContext):
         """
@@ -183,19 +211,30 @@ class MyListener (compiladoresListener):
 
         # Verifica si la variable ya está declarada en el ámbito local
         if self.tabla_simbolos.buscarLocal(ctx.getChild(1).getText()) is None:
-            tipo_dato = str(ctx.getChild(0).getText().upper())          # Obtiene el tipo de dato y lo convierte a mayúsculas
+            tipo_dato = ctx.getChild(0).getText()                       # Obtiene el tipo de dato de la variable como un string
+
+            # Asigna el tipo de dato a la variable
+            tipo_dato = self.asignarTiposDeDatos(tipo_dato)
+
             nombre = str(ctx.getChild(1).getText())                     # Obtiene el nombre de la variable
             variable = Variable(nombre, tipo_dato)                      # Crea un objeto Variable con el nombre y tipo de dato
 
             self.tabla_simbolos.agregarIdentificador(variable)          # Agrega la variable a la tabla de símbolos en el contexto actual
+
+            # tipo_dato = variable.obtenerTipoDato()
             
             print(f"Nueva variable: '{nombre}' de tipo '{tipo_dato}' agregada.\n") # Revisar para que no agregue el simbolo o solo reporte un error
 
             if str(ctx.getChild(2).getText()) != '': # Si el 3er hijo en la declaracion es distinto de vacio, existe una definicion
                 if self.tipo_dato_obtenido: # Evaluar si los tipos de datos son compatibles en la asignacion
-                    if tipo_dato != self.tipo_dato_obtenido:
-                        self.reporteAdvertencias(ctx, "Sintactico: tipo de dato no compatible")
-                        return
+                    
+                    
+
+                    self.compararTiposDeDatos(ctx, tipo_dato, self.tipo_dato_obtenido)
+
+                    # if tipo_dato != self.tipo_dato_obtenido:
+                    #     self.reporteAdvertencias(ctx, "Sintactico: tipo de dato no compatible")
+                    #     return
                     variable.setInicializado() # Marca la variable como inicializada si se proporciona un valor
                     self.tipo_dato_obtenido = None
                 else:
@@ -240,6 +279,8 @@ class MyListener (compiladoresListener):
             else:
                 self.dict_variables.update({ctx.getChild(1).getText(): False})
 
+
+
     def exitAsignacion(self, ctx:compiladoresParser.AsignacionContext):
         """
         Maneja la salida de un contexto de asignación.
@@ -255,9 +296,12 @@ class MyListener (compiladoresListener):
         else: # Evaluar si los tipos de datos son compatibles en la asignacion
             tipo_dato = identificador.obtenerTipoDato()
             if self.tipo_dato_obtenido:
-                if tipo_dato != self.tipo_dato_obtenido:
-                    self.reporteAdvertencias(ctx, "Sintactico: tipo de dato no compatible")
-                    return
+
+                self.compararTiposDeDatos(ctx, tipo_dato, self.tipo_dato_obtenido)
+
+                # if tipo_dato != self.tipo_dato_obtenido:
+                #     self.reporteAdvertencias(ctx, "Sintactico: tipo de dato no compatible")
+                #     return
                 identificador.setInicializado() # Marca la variable como inicializada si se proporciona un valor
                 self.tipo_dato_obtenido = None
 
@@ -360,6 +404,11 @@ class MyListener (compiladoresListener):
         if isinstance(ctx.getChild(2).getChild(0), compiladoresParser.DeclaracionContext):
             self.reporteErrores(ctx, "Sintactico", "Una instrucción dependiente no puede ser una declaración")
             return
+        
+    def exitRetornar(self, ctx:compiladoresParser.RetornarContext):
+        
+
+        return
 
     def exitPrototipo_funcion(self, ctx:compiladoresParser.Prototipo_funcionContext):
         """
@@ -383,9 +432,11 @@ class MyListener (compiladoresListener):
         self.funcion_actual = funcion # Guardamos la funcion actual.
 
         # Procesamos los argumentos de la funcion, si existen
-        if str(ctx.getChild(3).getText()) != '': # Si la funcion tiene argumentos
+        if ctx.getChild(3).getChildCount != 0:
+        # if str(ctx.getChild(3).getText()) != '': # Si la funcion tiene argumentos
             for arg in self.pila_argumentos:
                 self.funcion_actual.aregarArgumento(arg)
+
     
         # Si la funcion no existe Agregar función a la tabla de símbolos
         self.tabla_simbolos.agregarIdentificador(funcion)
@@ -438,7 +489,10 @@ class MyListener (compiladoresListener):
             try:
                 # Verificar si los argumentos coinciden
                 for ii, arg in enumerate(self.pila_argumentos):
-                    if funcion.args[ii].obtenerNombre() != arg.obtenerNombre() or funcion.args[ii].obtenerTipoDato() != arg.obtenerTipoDato():
+                    # if funcion.args[ii].obtenerNombre() != arg.obtenerNombre() or funcion.args[ii].obtenerTipoDato() != arg.obtenerTipoDato():
+                    # Solo se compara la cantidad de argumentos y los tipos de datos entre si, no se compara si el nombre coincide, ya que para
+                    # la funcion solo es relevante que coincida la cantidad de argumentos y el tipo de cada uno con su prototipo
+                    if funcion.args[ii].obtenerTipoDato() != arg.obtenerTipoDato():
                         self.reporteErrores(ctx, "Semantico", f"Argumento no coincide con su prototipo")
                         # Vacia la pila de argumentos
                         if self.pila_argumentos:
@@ -448,7 +502,7 @@ class MyListener (compiladoresListener):
                 self.reporteErrores(ctx, "Semantico", f"Número incorrecto de argumentos para función '{funcion.obtenerNombre()}'. "
                 f"Esperados: {len(funcion.args)}, Recibidos: {len(self.pila_argumentos)}")
             
-            # Si todo salio bien, y el prototipo tiene su definiocn de funcion estonces la inicializo
+            # Si todo salio bien, y el prototipo tiene su definicion de funcion estonces la inicializo
             funcion.setInicializado() # Se inicializa porque su definicion esta escrita correctamente
 
             # Vacia la pila de argumentos
@@ -480,6 +534,29 @@ class MyListener (compiladoresListener):
             nueva_var.setInicializado()  # Los parámetros se consideran inicializados
             nueva_var.setUsado()
             self.pila_argumentos.append(nueva_var)
+
+    def exitLlamada_funcion_valor(self, ctx:compiladoresParser.Llamada_funcion_valorContext):
+        """
+        Maneja las llamadas a funcion que retornan un valor.
+        """
+
+        # Obtengo el nombre de la variable donde se asigna el valor retorno de la funcion
+        nombre_id = ctx.getChild(0).getText()
+
+        # Primero busca si la variable a sido declarada localmente
+        id = self.tabla_simbolos.buscarLocal(nombre_id)
+
+        if id is None:
+            # Si no esta declarada localmente, busca en la tabla de simbolos global
+            id = self.tabla_simbolos.buscarGlobal(nombre_id)
+            if id is None:
+                # Si no esta declarada en ninguna de las tablas, se considera una variable no declarada
+                self.reporteErrores(ctx, "Semantico", f"Varaible '{nombre_id}' no ha sido declarada")
+                return
+        
+        # Si la variable si esta en la tabla de simbolos, se actualiza su estado a Usado (porque se le asigna el valor retorno de la funcion)
+        id.setUsado()
+
 
     def exitLlamada_funcion(self, ctx:compiladoresParser.Llamada_funcionContext):
         """
