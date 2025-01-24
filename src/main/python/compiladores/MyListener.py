@@ -405,10 +405,10 @@ class MyListener (compiladoresListener):
             self.reporteErrores(ctx, "Sintactico", "Una instrucción dependiente no puede ser una declaración")
             return
         
-    def exitRetornar(self, ctx:compiladoresParser.RetornarContext):
+    # def exitRetornar(self, ctx:compiladoresParser.RetornarContext):
         
 
-        return
+    #     return
 
     def exitPrototipo_funcion(self, ctx:compiladoresParser.Prototipo_funcionContext):
         """
@@ -432,7 +432,7 @@ class MyListener (compiladoresListener):
         self.funcion_actual = funcion # Guardamos la funcion actual.
 
         # Procesamos los argumentos de la funcion, si existen
-        if ctx.getChild(3).getChildCount != 0:
+        if ctx.getChild(3).getChildCount() != 0:
         # if str(ctx.getChild(3).getText()) != '': # Si la funcion tiene argumentos
             for arg in self.pila_argumentos:
                 self.funcion_actual.aregarArgumento(arg)
