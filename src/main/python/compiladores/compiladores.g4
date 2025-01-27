@@ -98,9 +98,10 @@ instruccion : declaracion PYC
 bloque : LLA instrucciones LLC ;
 
 // Declaracion de variables
-declaracion : tipo_dato ID definicion lista_variables;
+declaracion : tipo_dato ID definicion lista_variables ;
 
 definicion : ASIG opal
+           | ASIG llamada_funcion
            | 
            ;
 

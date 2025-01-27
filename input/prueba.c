@@ -1,34 +1,68 @@
 // Comentario que deberia ser ignorado
 // #include<stdio.h>
 
-int f (int a, int b);
 
-void main () {
-
-    char w = 0;
-
-    double x = w;
-
-    int e = x;
-
-
-    // e = x;
-
-    int o  = 10;
-    int p  = 20;
+int main () {
     
-    /* Invoacaion de funciones */
-    x = f(o, p);
+    int a = 5;
+    int b = 10;
+    int c = 15;
+    int d = 20;
+    int x = 0;
 
-    // printf("%f", x);
+    x = (a * b - c) + (a * b + d) + a * b;
+
+    return 0;
 }
-int a = 9;
-/* FUNCIONES */
-int  f (int a, int c) {
-    // int a = 0;
-    // int c = 0;
-    return a + c;
-}
+
+// int f (int a, int b);
+
+
+// int main () {
+//     char c = 1;
+//     int o = 10;
+//     int p = 20;
+
+//     int r = f(o, p), w = f(o, p);
+
+//     printf("%d %d\n", r, w);
+    
+//     return 0;
+// }
+
+
+// int  f (int a, int c) {
+//     // int a = 0;
+//     // int c = 0;
+//     return a + c;
+// }
+
+// void main () {
+
+//     char w = 0;
+
+//     double x = w;
+
+//     int e = x;
+
+
+//     // e = x;
+
+//     int o  = 10;
+//     int p  = 20;
+    
+//     /* Invoacaion de funciones */
+//     x = f(o, p);
+
+//     // printf("%f", x);
+// }
+// int a = 9;
+// /* FUNCIONES */
+// int  f (int a, int c) {
+//     // int a = 0;
+//     // int c = 0;
+//     return a + c;
+// }
 /* 
 int funcion (int a){
     int a; <----- ERROR

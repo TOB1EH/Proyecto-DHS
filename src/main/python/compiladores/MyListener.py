@@ -103,7 +103,7 @@ class MyListener (compiladoresListener):
         Funcion para comparar tipos de datos de dos variables. Y mostrar posibles perdidas de informacion si se asigna una variable
         de mayor orden de jerarquia a una de menor orden.
         """
-        
+
         if tipo1 < tipo2:
             self.reporteAdvertencias(ctx, f"Sintactico: conversión de '{tipo2.getTipoDato()}' a '{tipo1.getTipoDato()}', posible pérdida de datos.")
 
@@ -159,9 +159,36 @@ class MyListener (compiladoresListener):
         """
 
         # Verifica si el contexto corresponde a uno de estos tipos de instrucción válidos
-        if (ctx.declaracion() or ctx.asignacion() or ctx.retornar() or ctx.prototipo_funcion() or ctx.llamada_funcion()):
-            if ctx.getChild(1).getText() != ';': # Si no termina con ';' muestra un error
+        def verificarContextoInstruccion (ctx):
+            if ctx.declaracion():
+                return True
+            elif ctx.asignacion():
+                return True
+            elif ctx.retornar():
+                return True
+            elif ctx.prototipo_funcion():
+                return True
+            elif ctx.llamada_funcion_valor():
+                return True
+            elif ctx.llamada_funcion():
+                return True
+            else:
+                return False
+
+
+        if ctx.getChildCount() == 2 and ctx.getChild(1).getText() != ";":
+            if verificarContextoInstruccion(ctx):
                 self.reporteErrores(ctx, "Sintactico", "se esperaba ';'")
+            else:
+                if ctx.getChild(0).getText() == "if" and ctx.getChild(1).getText() == "(":
+                    self.reporteErrores(ctx, "Sintactico", f"se esperaba ')' antes de la instruccion")
+                else:    
+                    self.reporteErrores(ctx, "Lexico", f"carácter inválido {ctx.getChild(1).getText()}")
+
+        # # Verifica si el contexto corresponde a uno de estos tipos de instrucción válidos
+        # if (ctx.declaracion() or ctx.asignacion() or ctx.retornar() or ctx.prototipo_funcion() or ctx.llamada_funcion()):
+        #     if ctx.getChild(1).getText() != ';': # Si no termina con ';' muestra un error
+        #         self.reporteErrores(ctx, "Sintactico", "se esperaba ';'")
 
     def enterBloque(self, ctx:compiladoresParser.BloqueContext):
         """
@@ -311,7 +338,7 @@ class MyListener (compiladoresListener):
     
     """ ----------------------------------------------------------- """
 
-    tipo_dato_obtenido = None 
+    # tipo_dato_obtenido = None 
 
     def exitFactor(self, ctx:compiladoresParser.FactorContext):
         """
@@ -404,11 +431,6 @@ class MyListener (compiladoresListener):
         if isinstance(ctx.getChild(2).getChild(0), compiladoresParser.DeclaracionContext):
             self.reporteErrores(ctx, "Sintactico", "Una instrucción dependiente no puede ser una declaración")
             return
-        
-    # def exitRetornar(self, ctx:compiladoresParser.RetornarContext):
-        
-
-    #     return
 
     def exitPrototipo_funcion(self, ctx:compiladoresParser.Prototipo_funcionContext):
         """

@@ -75,19 +75,21 @@ class MyVisitor (compiladoresVisitor):
         if ctx.getChild(2).getChildCount() != 0:
             self.visitDefinicion(ctx.getChild(2))
 
-            # Si hay un temporal, es el ultimo paso de la asignacion, es decir, hubo operaciones dentro de la asignacion
-            if self.temporales:
-                self.file.write(f"{id} = {self.temporales.pop()}\n\n")
-                # self.temporales.clear()
-            
-            # De la contrario la variable solo almacena un factor
-            else:
-                self.file.write(f"{id} = {self.operando1}\n\n")
-            
-            # Reseteo los los elementos para las operaciones
-            self.operando1 = None
-            self.operando2 = None
-            self.operador  = None
+            if not ctx.getChild(2).llamada_funcion():
+
+                # Si hay un temporal, es el ultimo paso de la asignacion, es decir, hubo operaciones dentro de la asignacion
+                if self.temporales:
+                    self.file.write(f"{id} = {self.temporales.pop()}\n\n")
+                    # self.temporales.clear()
+                
+                # De la contrario la variable solo almacena un factor
+                else:
+                    self.file.write(f"{id} = {self.operando1}\n\n")
+                
+                # Reseteo los los elementos para las operaciones
+                self.operando1 = None
+                self.operando2 = None
+                self.operador  = None
         
         # De lo contrario solo se declaro la varible vacia
         else:
@@ -103,7 +105,15 @@ class MyVisitor (compiladoresVisitor):
         if ctx.getChildCount() == 0:
             return
         
-        self.visitOpal(ctx.getChild(1))
+        # Si la definicion es una llamada a funcion:
+        if ctx.llamada_funcion():
+            self.visitLlamada_funcion(ctx.getChild(1))
+
+            self.file.write(f'pop {ctx.parentCtx.getChild(1).getText()}\n')
+
+        # De lo contrario solo es una asignacion
+        else:
+            self.visitOpal(ctx.getChild(1))
 
 
     # Visit a parse tree produced by compiladoresParser#lista_variables.
@@ -874,7 +884,7 @@ class MyVisitor (compiladoresVisitor):
     def visitFuncion(self, ctx:compiladoresParser.FuncionContext):
         if ctx.getChild(1).getText() != 'main':
         
-            self.file.write(f'-------- FUNCION --------\n')
+            # self.file.write(f'-------- FUNCION --------\n')
 
             # Escribo en el archivo la etiqueta de salto hacia la funcion
             self.file.write(f'{self.etiqueta} {self.etiquetas.pop(0)}\n')
@@ -939,7 +949,7 @@ class MyVisitor (compiladoresVisitor):
 
     # Visit a parse tree produced by compiladoresParser#llamada_funcion.
     def visitLlamada_funcion(self, ctx:compiladoresParser.Llamada_funcionContext):
-        self.file.write(f'-------- LLAMADA A FUNCION --------\n')
+        # self.file.write(f'-------- LLAMADA A FUNCION --------\n')
 
         self.visitArgumentos_a_funcion(ctx.getChild(2))
 

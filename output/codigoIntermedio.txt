@@ -1,27 +1,19 @@
-w = 0
+a = 5
 
-x = w
+b = 10
 
-e = x
+c = 15
 
-o = 10
+d = 20
 
-p = 20
+x = 0
 
--------- LLAMADA A FUNCION --------
-push o
-push p
-push l1
-jmp l0
-label l1
-pop x
-a = 9
+t0 = a * b
+t1 = a * b
+t2 = t0 - c
+t3 = a * b
+t4 = t1 + d
+t5 = t2 + t4
+t6 = t5 + t3
+x = t6
 
--------- FUNCION --------
-label l0
-pop l1
-pop a
-pop c
-t0 = a + c
-push t0
-jmp l1
