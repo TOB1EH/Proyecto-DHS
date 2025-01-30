@@ -32,7 +32,7 @@ def main(argv):
         walker.visitPrograma(tree)          # Recorre el arbol sintactico correctamente construido
 
         optimizador = Optimizador()
-        optimizador.optimizarCodigoIntemedio()
+        optimizador.optimizarCodigoIntermedio()
 
     else:
         print(f"\nError al intentar recorrer el arbol sintactico, revise el archivo {archivo}\n")
