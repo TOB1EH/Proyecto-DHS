@@ -129,10 +129,24 @@ class MyListener (compiladoresListener):
         
         try: 
             print(f"\n=== Saliendo Contexto: {nombre_contexto[-1].nombre} ===") # Notifica que salimos de dicho contexto
-        except IndexError:
-            print(f"\n=== Saliendo Contexto: Global ===") # Si no hay contexto
+        except IndexError as e:
+            print(f"\n=== Saliendo Contexto:  ===") # Si no hay contexto
 
         print("\n+" + "="*10, "Fin de la Compilacion", "="*10 + "+\n")
+
+        tabla_global = nombre_contexto[-1].obtenerIdentificadores()
+
+        # Busca en la tabla del contexto global, si existen funciones declaradas que no fueron definidas
+        for id in tabla_global.values():
+            if isinstance(id, Funcion):
+                if not id.getInicializado():
+                    self.reporteErrores(id.miContexto, "Sintactico", f"la función '{id.obtenerNombre()}' no esta definida")
+            elif isinstance(id, Variable):
+                if not id.getInicializado():
+                    self.reporteAdvertencias(id.miContexto, f"la variable '{id.obtenerNombre()}' no esta inicializada")
+                if not id.getUsado():
+                    self.reporteAdvertencias(id.miContexto, f"la variable '{id.obtenerNombre()}' no es utilizada")
+
         self.tabla_simbolos.borrarContexto() # Borra el contexto global (Ultimo contexto restante)
 
         # Muestra el reporte de Errores
@@ -244,7 +258,9 @@ class MyListener (compiladoresListener):
             tipo_dato = self.asignarTiposDeDatos(tipo_dato)
 
             nombre = str(ctx.getChild(1).getText())                     # Obtiene el nombre de la variable
-            variable = Variable(nombre, tipo_dato)                      # Crea un objeto Variable con el nombre y tipo de dato
+            variable = Variable(nombre, tipo_dato)                     # Crea un objeto Variable con el nombre y tipo de dato
+
+            variable.miContexto = ctx
 
             self.tabla_simbolos.agregarIdentificador(variable)          # Agrega la variable a la tabla de símbolos en el contexto actual
 
@@ -276,6 +292,9 @@ class MyListener (compiladoresListener):
                     # Verifica si la variable ya ha sido declarada en el ámbito local
                     if self.tabla_simbolos.buscarLocal(nueva_variable) is None:
                         variable = Variable(nueva_variable, tipo_dato)              # Crea una nueva variable para cada nombre en la pila
+                        
+                        variable.miContexto = ctx
+
                         self.tabla_simbolos.agregarIdentificador(variable)          # Agrega cada variable a la tabla de símbolos
                 
                         # Para validar si realmente se estan agregando los ID's a la tabla de contextos en su contexto correspondiente
@@ -333,7 +352,7 @@ class MyListener (compiladoresListener):
                 self.tipo_dato_obtenido = None
 
         # Verifica si el valor asignado es correcto
-        if ctx.getChild(2) == ctx.opal():
+        if ctx.getChild(2) == ctx.opal() or ctx.llamada_funcion():
             identificador.setInicializado() # Se inicializa la variable
     
     """ ----------------------------------------------------------- """
@@ -443,6 +462,7 @@ class MyListener (compiladoresListener):
 
         # Verificar si la función ya existe
         if self.tabla_simbolos.buscarGlobal(nombre):
+            # si la funcion existe reporta el error y sale de 'Prototipo_funcion'
             self.reporteErrores(ctx, "Semantico", f"Función '{nombre}' ya fue declarada")
             # Vacia la pila de argumentos
             if self.pila_argumentos:
@@ -451,6 +471,9 @@ class MyListener (compiladoresListener):
         
         # Crear nueva función
         funcion = Funcion(nombre, tipo_retorno)
+
+        funcion.miContexto = ctx
+
         self.funcion_actual = funcion # Guardamos la funcion actual.
 
         # Procesamos los argumentos de la funcion, si existen
@@ -481,6 +504,9 @@ class MyListener (compiladoresListener):
             # Crear nueva función
             tipo_retorno = ctx.getChild(0).getText().upper()
             funcion = Funcion(nombre, tipo_retorno)
+
+            funcion.miContexto = ctx
+
             self.funcion_actual = funcion # Guardamos la funcion actual.
             
             # Procesamos los argumentos de la funcion, si existen
@@ -499,6 +525,8 @@ class MyListener (compiladoresListener):
             # Vacia la pila de argumentos
             if self.pila_argumentos:
                 self.pila_argumentos.clear()
+        
+        # Si la funcion existe
         else:
             # Si la función ya existe, verificar si los argumentos coinciden
             if funcion.obtenerTipoDato() != ctx.getChild(0).getText().upper():
@@ -512,6 +540,7 @@ class MyListener (compiladoresListener):
                 # Verificar si los argumentos coinciden
                 for ii, arg in enumerate(self.pila_argumentos):
                     # if funcion.args[ii].obtenerNombre() != arg.obtenerNombre() or funcion.args[ii].obtenerTipoDato() != arg.obtenerTipoDato():
+                    
                     # Solo se compara la cantidad de argumentos y los tipos de datos entre si, no se compara si el nombre coincide, ya que para
                     # la funcion solo es relevante que coincida la cantidad de argumentos y el tipo de cada uno con su prototipo
                     if funcion.args[ii].obtenerTipoDato() != arg.obtenerTipoDato():
@@ -536,10 +565,13 @@ class MyListener (compiladoresListener):
         Maneja la salida de un contexto de argumentos.
         """
         
-        if ctx.getChildCount(): 
+        if ctx.getChildCount() != 0: 
             nombre = ctx.getChild(1).getText()
             tipo_dato = ctx.getChild(0).getText()
             nueva_var = Variable(nombre, tipo_dato)
+
+            nueva_var.miContexto = ctx
+
             nueva_var.setInicializado()  # Los parámetros se consideran inicializados
             nueva_var.setUsado()
             self.pila_argumentos.append(nueva_var) 
@@ -549,36 +581,16 @@ class MyListener (compiladoresListener):
         Se ejecuta al final de la lista de argumentos de una función.
         """
 
-        if ctx.getChildCount():
+        if ctx.getChildCount() != 0:
             nombre = ctx.getChild(2).getText()
             tipo_dato = ctx.getChild(1).getText()
             nueva_var = Variable(nombre, tipo_dato)
+
+            nueva_var.miContexto = ctx
+
             nueva_var.setInicializado()  # Los parámetros se consideran inicializados
             nueva_var.setUsado()
             self.pila_argumentos.append(nueva_var)
-
-    def exitLlamada_funcion_valor(self, ctx:compiladoresParser.Llamada_funcion_valorContext):
-        """
-        Maneja las llamadas a funcion que retornan un valor.
-        """
-
-        # Obtengo el nombre de la variable donde se asigna el valor retorno de la funcion
-        nombre_id = ctx.getChild(0).getText()
-
-        # Primero busca si la variable a sido declarada localmente
-        id = self.tabla_simbolos.buscarLocal(nombre_id)
-
-        if id is None:
-            # Si no esta declarada localmente, busca en la tabla de simbolos global
-            id = self.tabla_simbolos.buscarGlobal(nombre_id)
-            if id is None:
-                # Si no esta declarada en ninguna de las tablas, se considera una variable no declarada
-                self.reporteErrores(ctx, "Semantico", f"Varaible '{nombre_id}' no ha sido declarada")
-                return
-        
-        # Si la variable si esta en la tabla de simbolos, se actualiza su estado a Usado (porque se le asigna el valor retorno de la funcion)
-        id.setUsado()
-
 
     def exitLlamada_funcion(self, ctx:compiladoresParser.Llamada_funcionContext):
         """
@@ -597,6 +609,7 @@ class MyListener (compiladoresListener):
         
         nombre_funcion = ctx.getChild(0).getText()
         funcion = self.tabla_simbolos.buscarGlobal(nombre_funcion)
+        
 
         if funcion: # Si la funcion existe en la tabla de simbolos comprueba que se reciban la misma cantidad de parametros esperados
             if len(funcion.args) != len(self.argumentos_a_funcion):
@@ -606,6 +619,7 @@ class MyListener (compiladoresListener):
                 return
             funcion.setUsado() # Si la funcion existe, se marca como usada por la invocacion
             print(f"Se invoco la Funcion: {funcion.obtenerNombre()} correctamente")
+            self.argumentos_a_funcion.clear()
         else:  # Si la funcion no existe reporta el error
             self.reporteErrores(ctx, "Semantico", f"Funcion '{nombre_funcion}' no fue declarada")
             self.argumentos_a_funcion.clear()
@@ -616,15 +630,17 @@ class MyListener (compiladoresListener):
         Se ejecuta al final de la lista de argumentos de una llamada a función.
         """
 
-        if ctx.getChildCount():
-            self.argumentos_a_funcion.append(ctx.getChild(0).getText())
+        if ctx.getChildCount() == 0:
+            return
+        self.argumentos_a_funcion.append(ctx.getChild(0).getText())
 
     def exitLista_argumentos_a_funcion(self, ctx:compiladoresParser.Lista_argumentos_a_funcionContext):
         """
         Se ejecuta al final de la lista de argumentos de una llamada a función.
         """
     
-        if ctx.getChildCount():
-            self.argumentos_a_funcion.append(ctx.getChild(1).getText())
+        if ctx.getChildCount() == 0:
+            return
+        self.argumentos_a_funcion.append(ctx.getChild(1).getText())
 
 

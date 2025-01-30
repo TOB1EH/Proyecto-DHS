@@ -32,6 +32,9 @@ class TipoDato(Enum):
         return NotImplemented
 
 class ID(ABC):
+
+    miContexto = None
+
     def __init__(self, nombre: str, tipo_dato: TipoDato):
         self._nombre = nombre
         self._tipo_dato = tipo_dato
