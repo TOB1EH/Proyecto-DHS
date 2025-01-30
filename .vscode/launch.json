@@ -11,7 +11,7 @@
             // Archivo con la gramatica
             "grammar": "${file}",
             // Archivo a parsear
-            "input": "input/prueba.c",
+            "input": "input/prueba2.c",
             // Simbolo inicial o regla inicial de donde comenzar
             "startRule": "programa",
             // Muestra Arbol Sintactico

@@ -1,17 +1,24 @@
-a = 5
+o = 5
 
-b = 10
+p = 10
 
-c = 15
+a = 4
 
-d = 20
+a = 6
 
-x = 0
+y = 6
 
-t0 = a * b
-t2 = t0 - c
-t4 = t0 + d
-t5 = t2 + t4
-t6 = t5 + t0
-x = t6
+push o
+push p
+push l1
+jmp l0
+label l1
+pop x
+value = 5
 
+label l0
+pop l1
+pop b
+pop a
+push t3
+jmp l1
