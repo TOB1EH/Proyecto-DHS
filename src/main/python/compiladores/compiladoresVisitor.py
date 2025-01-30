@@ -194,11 +194,6 @@ class compiladoresVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by compiladoresParser#llamada_funcion_valor.
-    def visitLlamada_funcion_valor(self, ctx:compiladoresParser.Llamada_funcion_valorContext):
-        return self.visitChildren(ctx)
-
-
     # Visit a parse tree produced by compiladoresParser#llamada_funcion.
     def visitLlamada_funcion(self, ctx:compiladoresParser.Llamada_funcionContext):
         return self.visitChildren(ctx)

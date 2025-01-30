@@ -341,15 +341,6 @@ class compiladoresListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by compiladoresParser#llamada_funcion_valor.
-    def enterLlamada_funcion_valor(self, ctx:compiladoresParser.Llamada_funcion_valorContext):
-        pass
-
-    # Exit a parse tree produced by compiladoresParser#llamada_funcion_valor.
-    def exitLlamada_funcion_valor(self, ctx:compiladoresParser.Llamada_funcion_valorContext):
-        pass
-
-
     # Enter a parse tree produced by compiladoresParser#llamada_funcion.
     def enterLlamada_funcion(self, ctx:compiladoresParser.Llamada_funcionContext):
         pass
