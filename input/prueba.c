@@ -7,25 +7,32 @@ int f (int d, int c);
 // int d ();
 
 int main () {
-    int x, o = 5, p = 10;
+    int x = 0, o = 5, p = 10;
 
-    int a = 5 + 3 - 4;
+    int a = 5 + 3 - 4 * 3;
 
     a = a + 2;
+
+    x = x + 1;
 
     int y = a;
 
     x = f(o, p);
+
+
+    a = a + 2;
+
+    // for (;;) {
+    //     x = x + 1;
+    // }
 
     // o = d();
 
     return x;
 }
 
-float value = 5;
-
 int f (int a, int b) {
-    int b = 10;
+    // int b = 10;
 	return a + b;
 }
 

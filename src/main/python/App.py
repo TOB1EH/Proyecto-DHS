@@ -12,7 +12,7 @@ from compiladores.Componentes.Optimizador import Optimizador
 
 def main(argv):
     # archivo = "input/opal.txt"
-    archivo = "input/prueba.c"
+    archivo = "input/prueba2.c"
 
     if len(argv) > 1 :
         archivo = argv[1]

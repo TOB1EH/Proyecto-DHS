@@ -1,13 +1,19 @@
+
+x = 0
 o = 5
 
 p = 10
 
-t0 = 5 + 3
-t1 = t0 - 4
+t0 = 4 * 3
+t1 = 5 + 3
+t2 = t1 - t0
 
-a = t1
-t2 = a + 2
 a = t2
+t3 = a + 2
+a = t3
+
+t4 = x + 1
+x = t4
 
 
 y = a
@@ -17,12 +23,13 @@ push l1
 jmp l0
 label l1
 pop x
+t5 = a + 2
+a = t5
 
-value = 5
 label l0
 pop l1
 pop b
 pop a
-t3 = a + b
-push t3
+t6 = a + b
+push t6
 jmp l1

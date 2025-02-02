@@ -1,3 +1,4 @@
+from antlr4 import *
 from .compiladoresListener import compiladoresListener
 from .compiladoresParser import compiladoresParser
 from .Componentes.TablaSimbolos import TablaSimbolos
@@ -62,6 +63,8 @@ class MyListener (compiladoresListener):
                 return "If"
             elif isinstance(padre.parentCtx, compiladoresParser.IelseContext): # Si el padre es 'else'
                 return "Else"
+            else:
+                return "Bloque"
         else: 
             return None
 
@@ -116,8 +119,12 @@ class MyListener (compiladoresListener):
         """
 
         print("\n+" + "="*10, "Comienza la Compilacion", "="*10 + "+\n")
+        
+        
         self.tabla_simbolos.agregarContexto("Global"); # Agrega el contexto global (primer contexto) a la tabla de simbolos
-        print(f"=== Entrando al Contexto Global ===")
+        
+        
+        print(f"=== Entrando al Contexto {self.tabla_simbolos.obtenerNombreContexto()} ===")
 
     def exitPrograma(self, ctx:compiladoresParser.ProgramaContext):
         """
@@ -127,27 +134,30 @@ class MyListener (compiladoresListener):
 
         nombre_contexto = self.tabla_simbolos.obtenerContextos()
         
-        try: 
+
+        try:
             print(f"\n=== Saliendo Contexto: {nombre_contexto[-1].nombre} ===") # Notifica que salimos de dicho contexto
+
+            tabla_global = nombre_contexto[-1].obtenerIdentificadores()
+
+            # Busca en la tabla del contexto global, si existen funciones declaradas que no fueron definidas
+            for id in tabla_global.values():
+                if isinstance(id, Funcion):
+                    if not id.getInicializado():
+                        self.reporteErrores(id.miContexto, "Sintactico", f"la función '{id.obtenerNombre()}' no esta definida")
+                elif isinstance(id, Variable):
+                    if not id.getInicializado():
+                        self.reporteAdvertencias(id.miContexto, f"la variable '{id.obtenerNombre()}' no esta inicializada")
+                    if not id.getUsado():
+                        self.reporteAdvertencias(id.miContexto, f"la variable '{id.obtenerNombre()}' no es utilizada")
+
+            self.tabla_simbolos.borrarContexto() # Borra el contexto global (Ultimo contexto restante)
+
         except IndexError as e:
-            print(f"\n=== Saliendo Contexto:  ===") # Si no hay contexto
+            self.reporteErrores(ctx, "Sintacto", f"Error al obtener la tabla global: {e}")
 
         print("\n+" + "="*10, "Fin de la Compilacion", "="*10 + "+\n")
-
-        tabla_global = nombre_contexto[-1].obtenerIdentificadores()
-
-        # Busca en la tabla del contexto global, si existen funciones declaradas que no fueron definidas
-        for id in tabla_global.values():
-            if isinstance(id, Funcion):
-                if not id.getInicializado():
-                    self.reporteErrores(id.miContexto, "Sintactico", f"la función '{id.obtenerNombre()}' no esta definida")
-            elif isinstance(id, Variable):
-                if not id.getInicializado():
-                    self.reporteAdvertencias(id.miContexto, f"la variable '{id.obtenerNombre()}' no esta inicializada")
-                if not id.getUsado():
-                    self.reporteAdvertencias(id.miContexto, f"la variable '{id.obtenerNombre()}' no es utilizada")
-
-        self.tabla_simbolos.borrarContexto() # Borra el contexto global (Ultimo contexto restante)
+        
 
         # Muestra el reporte de Errores
         if self.errores:
@@ -182,12 +192,11 @@ class MyListener (compiladoresListener):
                 return True
             elif ctx.prototipo_funcion():
                 return True
-            elif ctx.llamada_funcion_valor():
-                return True
             elif ctx.llamada_funcion():
                 return True
             else:
                 return False
+            
 
 
         if ctx.getChildCount() == 2 and ctx.getChild(1).getText() != ";":
@@ -195,14 +204,13 @@ class MyListener (compiladoresListener):
                 self.reporteErrores(ctx, "Sintactico", "se esperaba ';'")
             else:
                 if ctx.getChild(0).getText() == "if" and ctx.getChild(1).getText() == "(":
+
                     self.reporteErrores(ctx, "Sintactico", f"se esperaba ')' antes de la instruccion")
+                
                 else:    
                     self.reporteErrores(ctx, "Lexico", f"carácter inválido {ctx.getChild(1).getText()}")
 
-        # # Verifica si el contexto corresponde a uno de estos tipos de instrucción válidos
-        # if (ctx.declaracion() or ctx.asignacion() or ctx.retornar() or ctx.prototipo_funcion() or ctx.llamada_funcion()):
-        #     if ctx.getChild(1).getText() != ';': # Si no termina con ';' muestra un error
-        #         self.reporteErrores(ctx, "Sintactico", "se esperaba ';'")
+
 
     def enterBloque(self, ctx:compiladoresParser.BloqueContext):
         """
@@ -230,7 +238,7 @@ class MyListener (compiladoresListener):
         # Reporte de errores
         if ctx.getChild(2).getText() != '}':
             linea = ctx.LLC().getSymbol().line
-            self.errores.append(f"Error Sintactico en la linea {linea}: se esperaba una instrucción")
+            self.errores.append(f"Error Sintactico en la linea {linea}: falta una llave de cierre")
             return
 
         nombre_contexto = self.obtenerNombreContexto(ctx)
@@ -266,7 +274,7 @@ class MyListener (compiladoresListener):
 
             # tipo_dato = variable.obtenerTipoDato()
             
-            print(f"Nueva variable: '{nombre}' de tipo '{tipo_dato}' agregada.\n") # Revisar para que no agregue el simbolo o solo reporte un error
+            print(f"Nueva variable: '{nombre}' de tipo '{tipo_dato.getTipoDato()}' agregada.\n") # Revisar para que no agregue el simbolo o solo reporte un error
 
             if str(ctx.getChild(2).getText()) != '': # Si el 3er hijo en la declaracion es distinto de vacio, existe una definicion
                 if self.tipo_dato_obtenido: # Evaluar si los tipos de datos son compatibles en la asignacion
@@ -299,7 +307,7 @@ class MyListener (compiladoresListener):
                 
                         # Para validar si realmente se estan agregando los ID's a la tabla de contextos en su contexto correspondiente
                         print(f"Nueva variable: '{self.tabla_simbolos.buscarLocal(variable.obtenerNombre()).obtenerNombre()}'" + 
-                              f" de tipo '{tipo_dato}' agregada.\n")
+                              f" de tipo '{tipo_dato.getTipoDato()}' agregada.\n")
 
                         if isInicializado: # Marca la variable como inicializada si es True
                             variable.setInicializado()

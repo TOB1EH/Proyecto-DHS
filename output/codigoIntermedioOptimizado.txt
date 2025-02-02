@@ -1,12 +1,16 @@
+x = 0
+
 o = 5
 
 p = 10
 
-a = 4
+a = -4
 
-a = 6
+a = -2
 
-y = 6
+x = 1
+
+y = -2
 
 push o
 push p
@@ -14,11 +18,11 @@ push l1
 jmp l0
 label l1
 pop x
-value = 5
+a = 0
 
 label l0
 pop l1
 pop b
 pop a
-push t3
+push t6
 jmp l1

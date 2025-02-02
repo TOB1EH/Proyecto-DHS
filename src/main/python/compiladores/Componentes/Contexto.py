@@ -2,7 +2,7 @@
 from .ID import ID
 
 class Contexto:
-    def __init__(self, nombre="Global"):
+    def __init__(self, nombre):
         # self._tabla = {}
         # self._tabla = dict()
         self._tabla: dict[str, ID] = {} # Un Contexto es una tabla de ID's
