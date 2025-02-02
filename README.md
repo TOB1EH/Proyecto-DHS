@@ -30,7 +30,7 @@ Esta carpeta contiene archivos de entrada que son utilizados por el sistema para
 - `entrada.txt`: Archivo de texto con datos de entrada.
 - `errores.c`: Código fuente en C que puede contener errores para ser analizados.
 - `opal.txt`: Otro archivo de entrada que puede ser utilizado para pruebas.
-- `parentesis.txt`: Archivo que probablemente contiene datos relacionados con la validación de paréntesis.
+- `parentesis.txt`: Archivo que contiene datos relacionados con la validación de paréntesis.
 - `programa.txt`: Archivo que contiene un programa de ejemplo para análisis.
 - `prueba.c`: Código fuente en C para pruebas.
 - `prueba2.c`: Otro archivo de código fuente para pruebas.
@@ -46,16 +46,22 @@ La carpeta `src/` contiene el código fuente del proyecto, organizado en subcarp
 
 - **`main/python/`**: Contiene los scripts principales escritos en Python.
   - **`Componentes/`**: Subcarpeta que incluye varios módulos que forman parte del sistema, tales como:
-    - `Contexto.py`: Maneja el contexto del análisis.
-    - `Funcion.py`: Contiene funciones utilizadas en el análisis.
-    - `ID.py`: Maneja identificadores en el código.
-    - `Optimizador.py`: Implementa algoritmos de optimización.
     - `TablaSimbolos.py`: Maneja la tabla de símbolos utilizada en el análisis.
-    - `MyListener.py` y `MyVisitor.py`: Implementan patrones de diseño para el análisis de código.
-    - `compiladores.g4`: Archivo de gramática utilizado por ANTLR para el análisis sintáctico.
+    - `Contexto.py`: Maneja el contexto del análisis.
+    - `Funcion.py`: Implementa ID para manejar las funciones de C.
+    - `Variable.py`: Implementa ID para manejar las variables de C.
+    - `ID.py`: Maneja identificadores propios de C.
+    - `Optimizador.py`: Implementa algoritmos de optimización para codigo intermedio de tres direcciones.
+  - `MyListener.py`: Implementa compilador Listener para el análisis sintactico y semantico de código C basico.
+  - `MyVisitor.py`: Implementa compilador Visitor para conversion a codigo intermedio.
+  - `compiladores.g4`: Archivo de gramática utilizado por ANTLR para el análisis lexico.
 
 ### 4. **Archivos de Configuración**
-- `pom.xml`: Archivo de configuración para proyectos de Java, que puede ser utilizado para gestionar dependencias y configuraciones del proyecto.
+- `pom.xml`
+- **`.vscode/`**:
+    - `settings.json`: Archivo de configuración para el entorno de desarrollo de Visual Studio
+    - `launch.json`: Archivo de configuración para depuración
+    - `tasks.json`
 
 ### 5. **Documentación**
 - `README.md`: Este archivo proporciona una descripción general del proyecto y su estructura.
@@ -76,7 +82,7 @@ La carpeta `src/` contiene el código fuente del proyecto, organizado en subcarp
 ```
 
 ## Uso
-Para utilizar el sistema, coloca tus archivos de entrada en la carpeta `input/` y ejecuta el script principal en `App.py` en la ruta `src/main/python/` Asegúrarse de que los archivos de entrada estén en el formato correcto para que el sistema pueda procesarlos adecuadamente.
+Para utilizar el sistema, coloca tus archivos de entrada en la carpeta `input/` y ejecuta el script principal `App.py` ubicado en  `src/main/python/` Asegúrarse de que los archivos de entrada estén en el formato correcto para que el sistema pueda procesarlos adecuadamente.
 
 ## Contacto
 Tobias Funes - tobiasfunes@hotmail.com.ar
