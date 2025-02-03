@@ -1,4 +1,4 @@
-# Generated from /home/tobias/Documentos/workSpace/Proyectos-DHS/proyecto-dhs/src/main/python/compiladores/compiladores.g4 by ANTLR 4.13.1
+# Generated from /home/tobias/Documentos/workSpace/Proyectos-DHS/proyecto-dhs/src/main/python/proyecto-dhs/compiladores.g4 by ANTLR 4.13.1
 from antlr4 import *
 if "." in __name__:
     from .compiladoresParser import compiladoresParser
@@ -269,15 +269,6 @@ class compiladoresListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by compiladoresParser#cond_for.
-    def enterCond_for(self, ctx:compiladoresParser.Cond_forContext):
-        pass
-
-    # Exit a parse tree produced by compiladoresParser#cond_for.
-    def exitCond_for(self, ctx:compiladoresParser.Cond_forContext):
-        pass
-
-
     # Enter a parse tree produced by compiladoresParser#iter.
     def enterIter(self, ctx:compiladoresParser.IterContext):
         pass
@@ -338,6 +329,15 @@ class compiladoresListener(ParseTreeListener):
 
     # Exit a parse tree produced by compiladoresParser#lista_argumentos.
     def exitLista_argumentos(self, ctx:compiladoresParser.Lista_argumentosContext):
+        pass
+
+
+    # Enter a parse tree produced by compiladoresParser#llamada_funcion_valor.
+    def enterLlamada_funcion_valor(self, ctx:compiladoresParser.Llamada_funcion_valorContext):
+        pass
+
+    # Exit a parse tree produced by compiladoresParser#llamada_funcion_valor.
+    def exitLlamada_funcion_valor(self, ctx:compiladoresParser.Llamada_funcion_valorContext):
         pass
 
 

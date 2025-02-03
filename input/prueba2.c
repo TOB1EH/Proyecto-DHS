@@ -10,7 +10,7 @@ int main() {
     // int array[5];
 
     // Errores Léxicos
-    int €valor = 10;  // Error: carácter inválido €
+    // int €valor = 10;  // Error: carácter inválido €
 
 
     // // Errores Sintácticos
@@ -34,7 +34,7 @@ int main() {
 
     // Advertencias
 
-    if (b = 10) {
+    if (b == 10) {
 
     }
 
@@ -48,7 +48,7 @@ int main() {
     {
         int y = 10;
     
-
+    }
     // for (int i = 0; i < 10; i++) {
     //     int j = i * 2;
     //     // El valor de j es: (i*2)
@@ -77,12 +77,13 @@ int main() {
     return 0;
 }
 
+// Función Imprime Mensaje
+void imprimeMensaje() {
+    return;
+    // ¡Hola, mundo!
+}
+
 // Función Suma
 int funcionSuma(int a, int b) {
     return a + b;  // Uso de 'a' y 'b' no inicializados en 'main'
-}
-
-// Función Imprime Mensaje
-void imprimeMensaje() {
-    // ¡Hola, mundo!
 }

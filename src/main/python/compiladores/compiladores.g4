@@ -213,7 +213,9 @@ iter : ID INC
      |
      ;
 
-retornar : RETURN oplogicos ;
+retornar : RETURN oplogicos 
+         | 
+         ;
 
 prototipo_funcion : valor_retorno ID PA argumentos PC ;
 

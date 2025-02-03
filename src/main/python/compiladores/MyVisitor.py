@@ -32,6 +32,10 @@ class MyVisitor (compiladoresVisitor):
         self.operador                = None
         self.isSumador               = False
         self.isFuncion               = False
+        
+        self.etiquetaFuncion         = {}
+        self.funcionInvocada         = {}
+        self.isReturn                = False
 
         # Constantes Codigo Intermedio de Tres Direcciones
         self.etiqueta   = 'label'
@@ -853,10 +857,27 @@ class MyVisitor (compiladoresVisitor):
             self.file.write(f'{id} =  {self.temporales.pop()}\n')
 
 
+    # Visit a parse tree produced by compiladoresParser#retornar.
+    def visitRetornar(self, ctx:compiladoresParser.RetornarContext):
+        if ctx.getChildCount() == 2:
+            self.isReturn = True
+
+            self.visitOplogicos(ctx.getChild(1))
+            
+            # # Genero un temporal para la operacion del retorno
+            # self.temporales.append(self.generadorDeTemporales.getTemporal())
+            
+
+    
     # Visit a parse tree produced by compiladoresParser#prototipo_funcion.
     def visitPrototipo_funcion(self, ctx:compiladoresParser.Prototipo_funcionContext):
         # Genero la etiqueta de salto hacia la funcion
         self.etiquetas.append(self.generadorDeEtiquetas.getEtiqueta())
+
+        nombre_funcion = ctx.getChild(1).getText().strip()
+
+        # Vinculo el nombre de la funcion a su respectiva etiqueta
+        self.etiquetaFuncion[nombre_funcion] = self.etiquetas[-1]
 
 
     # Visit a parse tree produced by compiladoresParser#funcion.
@@ -864,31 +885,61 @@ class MyVisitor (compiladoresVisitor):
         # Si no es la funcion principal main
         if ctx.getChild(1).getText() != 'main':
 
-            # Escribo en el archivo la etiqueta de salto hacia la funcion
-            self.file.write(f'{self.etiqueta} {self.etiquetas.pop(0)}\n')
+            nombre_funcion = ctx.getChild(1).getText().strip()
 
-            self.file.write(f'pop {self.etiquetas[-1]}\n')
+            hay_prototipo = False
+
+            # Busco la etiqueta asociada a la funcion
+            for ii, etiqueta in enumerate(self.etiquetas):
+                if etiqueta == self.etiquetaFuncion[nombre_funcion]:
+                    
+                    # Escribo en el archivo la etiqueta de salto hacia la funcion
+                    self.file.write(f'\n{self.etiqueta} {self.etiquetas.pop(ii)}\n')
+
+                    # Si ecuntra la eiqueta significa que la funciion fue declarada 
+                    hay_prototipo = True
+                    break
+            
+            # Si no encuentra la etiqueta significa que la funcion no fue declarada
+            if not hay_prototipo:
+                # genera una etiqueta para la funcion
+                self.etiquetas.append(self.generadorDeEtiquetas.getEtiqueta())
+
+                # Escribe en el archivo la etiqueta de la funcion
+                self.file.write(f'\n{self.etiqueta} {self.etiquetas.pop()}\n')
+            
+            
+            # Si la funcion fue invocada previamente
+            if nombre_funcion in self.funcionInvocada: 
+                self.file.write(f'pop {self.etiquetas[-1]}\n')
     
             # Si la funcion tiene argumentos
             if ctx.getChild(3).getChildCount() != 0:                
                 # Visito la Regla Argumentos para obtener los argumentos de la funcion
                 self.visitArgumentos(ctx.getChild(3))
-
+            
             self.visitBloque(ctx.getChild(5))
+            
+            # Si la funcion tiene que retornar un valor
+            if self.isReturn:
+                # Si hay temporales
+                if self.temporales:
+                    self.file.write(f'push {self.temporales.pop()}\n')
+                else:
+                    # Solo escribo en el archivo si operando1 no es None
+                    if self.operando1:
+                        self.file.write(f'push {self.operando1}\n')
 
-            # Si hay temporales
-            if self.temporales:
-                self.file.write(f'push {self.temporales.pop()}\n')
-            else:
-                # Solo escribo en el archivo si operando1 no es None
-                if self.operando1:
-                    self.file.write(f'push {self.operando1}\n')
-
-            self.file.write(f'{self.b} {self.etiquetas.pop()}\n')
+                self.isReturn = False
+            
+            if nombre_funcion in self.funcionInvocada: 
+                self.file.write(f'{self.b} {self.etiquetas.pop()}\n')
         
         # En caso contrario, estamos en main
         else:
             self.visitBloque(ctx.getChild(5))
+
+            if self.isReturn: self.isReturn = False
 
 
     # Visit a parse tree produced by compiladoresParser#argumentos.
@@ -921,6 +972,8 @@ class MyVisitor (compiladoresVisitor):
     # Visit a parse tree produced by compiladoresParser#llamada_funcion.
     def visitLlamada_funcion(self, ctx:compiladoresParser.Llamada_funcionContext):
 
+        nombre_funcion = ctx.getChild(0).getText().strip()
+        
         # Obtiene los argumentos de la funcion
         self.visitArgumentos_a_funcion(ctx.getChild(2))
 
@@ -931,7 +984,10 @@ class MyVisitor (compiladoresVisitor):
         self.file.write(f'push {self.etiquetas[-1]}\n')
 
         #  Escribe en el archivo el salto a la funcion
-        self.file.write(f'{self.b} {self.etiquetas[-2]}\n')
+        self.file.write(f'{self.b} {self.etiquetaFuncion[nombre_funcion]}\n')
+
+        # Vinculo la funcion invocada a la etiqueta donde debe retornar
+        self.funcionInvocada[nombre_funcion] = self.etiquetas[-1]
 
         #  Escribe en el archivo el salto a la etiqueta de retorno
         self.file.write(f'{self.etiqueta} {self.etiquetas[-1]}\n')

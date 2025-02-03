@@ -1,28 +1,27 @@
+w = 0
+
 x = 0
 
-o = 5
+b = 5
 
-p = 10
+p = 0
 
-a = -4
+a = 5
 
-a = -2
+ifnjmp t0, l2
+label l2
+y = 10
 
-x = 1
-
-y = -2
-
-push o
-push p
-push l1
+push a
+push b
+push l3
 jmp l0
+label l3
+pop resultado
 label l1
-pop x
-a = 0
-
 label l0
-pop l1
+pop l3
 pop b
 pop a
-push t6
-jmp l1
+push t1
+jmp l3

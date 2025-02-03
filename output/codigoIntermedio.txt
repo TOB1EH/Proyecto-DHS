@@ -1,35 +1,31 @@
 
-x = 0
-o = 5
+w = 0
 
-p = 10
-
-t0 = 4 * 3
-t1 = 5 + 3
-t2 = t1 - t0
-
-a = t2
-t3 = a + 2
-a = t3
-
-t4 = x + 1
-x = t4
+x = w
+b = 5
 
 
-y = a
-push o
-push p
-push l1
+p = 0
+a = b
+
+t0 = b == 10
+ifnjmp t0, l2
+label l2
+
+y = 10
+push a
+push b
+push l3
 jmp l0
+label l3
+pop resultado
+
 label l1
-pop x
-t5 = a + 2
-a = t5
 
 label l0
-pop l1
+pop l3
 pop b
 pop a
-t6 = a + b
-push t6
-jmp l1
+t1 = a + b
+push t1
+jmp l3

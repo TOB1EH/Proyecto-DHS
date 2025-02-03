@@ -1,4 +1,4 @@
-# Generated from /home/tobias/Documentos/workSpace/Proyectos-DHS/proyecto-dhs/src/main/python/compiladores/compiladores.g4 by ANTLR 4.13.1
+# Generated from /home/tobias/Documentos/workSpace/Proyectos-DHS/proyecto-dhs/src/main/python/proyecto-dhs/compiladores.g4 by ANTLR 4.13.1
 from antlr4 import *
 if "." in __name__:
     from .compiladoresParser import compiladoresParser
@@ -154,11 +154,6 @@ class compiladoresVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by compiladoresParser#cond_for.
-    def visitCond_for(self, ctx:compiladoresParser.Cond_forContext):
-        return self.visitChildren(ctx)
-
-
     # Visit a parse tree produced by compiladoresParser#iter.
     def visitIter(self, ctx:compiladoresParser.IterContext):
         return self.visitChildren(ctx)
@@ -191,6 +186,11 @@ class compiladoresVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by compiladoresParser#lista_argumentos.
     def visitLista_argumentos(self, ctx:compiladoresParser.Lista_argumentosContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by compiladoresParser#llamada_funcion_valor.
+    def visitLlamada_funcion_valor(self, ctx:compiladoresParser.Llamada_funcion_valorContext):
         return self.visitChildren(ctx)
 
 
